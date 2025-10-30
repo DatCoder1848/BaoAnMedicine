@@ -1,315 +1,271 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bảo An Medicine — Sản phẩm</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-<header>
- <div class="logo">
-  <a href="index.html" class="home-link" aria-label="Về trang chủ" title="Về trang chủ" style="display:flex;align-items:center;gap:12px">
-    <img src="assets/logo.png" alt="logo" style="width:54px;height:54px;border-radius:10px;object-fit:cover">
-    <div>
-      <div class="brand">BẢO AN</div>
-      <div class="sub">MEDICINE.</div>
-    </div>
-  </a>
-</div>
-  <div class="search"><input placeholder="Tìm tên thuốc, công dụng..." /></div>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="#" class="link-about">About Us</a>
-    <div class="dropdown" id="productsDrop">
-      <a href="#" id="prodBtn">Products ▾</a>
-      <div class="dropdown-menu">
-        <a href="#pain">Pain Relievers</a>
-        <a href="#allergy">Allergy</a>
-        <a href="#firstaid">First Aid</a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Bảo An Medicine — Sản phẩm</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/products.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a
+          href="index.html"
+          class="home-link"
+          aria-label="Về trang chủ"
+          title="Về trang chủ"
+          style="display: flex; align-items: center; gap: 12px"
+        >
+          <img
+            src="assets/logo.png"
+            alt="logo"
+            style="
+              width: 54px;
+              height: 54px;
+              border-radius: 10px;
+              object-fit: cover;
+            "
+          />
+          <div>
+            <div class="brand">BẢO AN</div>
+            <div class="sub">MEDICINE.</div>
+          </div>
+        </a>
       </div>
-    </div>
-  </nav>
-  <div class="icons">
-    <a href="cart.html" title="Cart" class="icon-btn">🛒<span class="icon-badge" id="cart-count">0</span></a>
-    <a href="login.html" title="Account" class="icon-btn">👤</a>
-  </div>
-</header>
-
-<main class="container">
-  <!-- NEW: Best Sellers (horizontal scroll) -->
-  <section id="best-sellers" style="padding:28px 0">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h2 style="margin:0">Sản phẩm bán chạy</h2>
-        <p class="lead muted" style="color:var(--muted);margin-top:6px">Các sản phẩm được khách hàng ưa chuộng nhất.</p>
+      <div class="search">
+        <input placeholder="Tìm tên thuốc, công dụng..." />
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="scroll-btn" data-dir="left" aria-label="Scroll left">◀</button>
-        <button class="scroll-btn" data-dir="right" aria-label="Scroll right">▶</button>
-      </div>
-    </div>
-
-    <div class="h-scroll" aria-label="Best sellers list" style="margin-top:18px;padding-bottom:6px">
-      <div class="product-card">
-        <img src="assets/prod1.png" alt="Prod 1">
-        <div class="pc-title">Acetaminophen Pills</div>
-        <div class="pc-sub muted">Giảm đau, hạ sốt</div>
-      </div>
-
-      <div class="product-card">
-        <img src="assets/prod2.png" alt="Prod 2">
-        <div class="pc-title">Ibuprofen</div>
-        <div class="pc-sub muted">Kháng viêm</div>
-      </div>
-
-      <div class="product-card">
-        <img src="assets/prod3.png" alt="Prod 3">
-        <div class="pc-title">Aspirin</div>
-        <div class="pc-sub muted">Hỗ trợ tim mạch</div>
-      </div>
-
-      <div class="product-card">
-        <img src="assets/prod1.png" alt="Prod 4">
-        <div class="pc-title">Throat Lozenges</div>
-        <div class="pc-sub muted">Giảm đau họng</div>
-      </div>
-
-      <div class="product-card">
-        <img src="assets/prod2.png" alt="Prod 5">
-        <div class="pc-title">Antihistamine</div>
-        <div class="pc-sub muted">Giảm dị ứng</div>
-      </div>
-
-      <div class="product-card">
-        <img src="assets/prod3.png" alt="Prod 6">
-        <div class="pc-title">Nasal Spray</div>
-        <div class="pc-sub muted">Giảm nghẹt mũi</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- NEW: Product Categories -->
-  <section id="categories" style="padding:18px 0">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h2 style="margin:0">Phân loại sản phẩm</h2>
-        <p class="lead muted" style="color:var(--muted);margin-top:6px">Chọn loại để xem các sản phẩm tương ứng.</p>
-      </div>
-    </div>
-
-    <div class="categories-grid" style="margin-top:16px">
-      <a class="cat-card" href="products.html#pain">
-        <div class="cat-thumb">💊</div>
-        <div class="cat-title">Giảm đau</div>
-        <div class="cat-sub muted">Pain Relievers</div>
-      </a>
-
-      <a class="cat-card" href="products.html#allergy">
-        <div class="cat-thumb">🤧</div>
-        <div class="cat-title">Dị ứng</div>
-        <div class="cat-sub muted">Allergy</div>
-      </a>
-
-      <a class="cat-card" href="products.html#firstaid">
-        <div class="cat-thumb">🩹</div>
-        <div class="cat-title">Sơ cứu</div>
-        <div class="cat-sub muted">First Aid</div>
-      </a>
-
-      <a class="cat-card" href="products.html#others">
-        <div class="cat-thumb">🏥</div>
-        <div class="cat-title">Khác</div>
-        <div class="cat-sub muted">Supplements & More</div>
-      </a>
-    </div>
-  </section>
-</main>
-
-<footer>
-  <div class="container" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;">
-    <div style="max-width: 420px;">
-      <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: white;">
-        <img src="assets/logo.png" style="width: 44px; height: 44px; border-radius: 8px;" alt="Bảo An Medicine Logo">
-        <div>
-          <div style="font-weight: 700; color: #fff;">BẢO AN</div>
-          <div style="font-size: 12px; color: rgba(255,255,255,0.9);">MEDICINE.</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="#" class="link-about">About Us</a>
+        <div class="dropdown" id="productsDrop">
+          <a href="#" id="prodBtn">Products ▾</a>
+          <div class="dropdown-menu">
+            <a href="#pain">Pain Relievers</a>
+            <a href="#allergy">Allergy</a>
+            <a href="#firstaid">First Aid</a>
+          </div>
         </div>
-      </a>
-      <p class="muted" style="color: rgba(255,255,255,0.9); margin-top: 12px;">
-        Chúng tôi cam kết cung cấp thuốc chính hãng và tư vấn chuyên môn cho khách hàng.
-      </p>
-    </div>
+      </nav>
+      <div class="icons">
+        <a href="cart.html" title="Cart" class="icon-btn"
+          >🛒<span class="icon-badge" id="cart-count">0</span></a
+        >
+        <a href="login.html" title="Account" class="icon-btn">👤</a>
+      </div>
+    </header>
 
-    <div style="display: flex; gap: 40px;">
-      <div>
-        <div style="font-weight: 700;">Company</div>
-        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-          <a href="index.html#about-section">About Us</a>
-          <a href="products.html">Products</a>
-          <a href="#">Services</a>
+    <main class="container">
+      <!-- NEW: Best Sellers (horizontal scroll) -->
+      <section id="best-sellers" style="padding: 28px 0">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <h2 style="margin: 0">Sản phẩm bán chạy</h2>
+            <p class="lead muted" style="color: var(--muted); margin-top: 6px">
+              Các sản phẩm được khách hàng ưa chuộng nhất.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button class="scroll-btn" data-dir="left" aria-label="Scroll left">
+              ◀
+            </button>
+            <button
+              class="scroll-btn"
+              data-dir="right"
+              aria-label="Scroll right"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="h-scroll"
+          aria-label="Best sellers list"
+          style="margin-top: 18px; padding-bottom: 6px"
+          id="best-sellers-container"
+        >
+          <!-- Best sellers sẽ được tải động -->
+        </div>
+      </section>
+
+      <!-- NEW: Product Categories -->
+      <section id="categories" style="padding: 18px 0">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <h2 style="margin: 0">Phân loại sản phẩm</h2>
+            <p class="lead muted" style="color: var(--muted); margin-top: 6px">
+              Chọn loại để xem các sản phẩm tương ứng.
+            </p>
+          </div>
+        </div>
+
+        <div class="categories-grid" style="margin-top: 16px">
+          <a class="cat-card" href="#pain" data-category="pain">
+            <div class="cat-thumb">💊</div>
+            <div class="cat-title">Giảm đau</div>
+            <div class="cat-sub muted">Pain Relievers</div>
+          </a>
+
+          <a class="cat-card" href="#allergy" data-category="allergy">
+            <div class="cat-thumb">🤧</div>
+            <div class="cat-title">Dị ứng</div>
+            <div class="cat-sub muted">Allergy</div>
+          </a>
+
+          <a class="cat-card" href="#firstaid" data-category="firstaid">
+            <div class="cat-thumb">🩹</div>
+            <div class="cat-title">Sơ cứu</div>
+            <div class="cat-sub muted">First Aid</div>
+          </a>
+
+          <a class="cat-card" href="#others" data-category="others">
+            <div class="cat-thumb">🏥</div>
+            <div class="cat-title">Khác</div>
+            <div class="cat-sub muted">Supplements & More</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Products Grid -->
+      <section class="products-grid-section" aria-labelledby="products-heading">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <h2 style="margin: 0" id="products-heading">Tất cả sản phẩm</h2>
+            <p class="lead muted" style="color: var(--muted); margin-top: 6px">
+              Khám phá toàn bộ danh mục sản phẩm của chúng tôi.
+            </p>
+          </div>
+          <div>
+            <a href="#" class="view-all-btn" id="view-all-products"
+              >Xem tất cả sản phẩm</a
+            >
+          </div>
+        </div>
+
+        <div class="products-grid" id="products-grid">
+          <!-- Sản phẩm sẽ được hiển thị ở đây -->
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div
+        class="container"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+        "
+      >
+        <div style="max-width: 420px">
+          <a
+            href="index.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              text-decoration: none;
+              color: white;
+            "
+          >
+            <img
+              src="assets/logo.png"
+              style="width: 44px; height: 44px; border-radius: 8px"
+              alt="Bảo An Medicine Logo"
+            />
+            <div>
+              <div style="font-weight: 700; color: #fff">BẢO AN</div>
+              <div style="font-size: 12px; color: rgba(255, 255, 255, 0.9)">
+                MEDICINE.
+              </div>
+            </div>
+          </a>
+          <p
+            class="muted"
+            style="color: rgba(255, 255, 255, 0.9); margin-top: 12px"
+          >
+            Chúng tôi cam kết cung cấp thuốc chính hãng và tư vấn chuyên môn cho
+            khách hàng.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 40px">
+          <div>
+            <div style="font-weight: 700">Company</div>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                margin-top: 8px;
+              "
+            >
+              <a href="index.html#about-section">About Us</a>
+              <a href="products.html">Products</a>
+              <a href="#">Services</a>
+            </div>
+          </div>
+          <div>
+            <div style="font-weight: 700">Resources</div>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                margin-top: 8px;
+              "
+            >
+              <a href="#">Educational</a>
+              <a href="#">Nutrition</a>
+            </div>
+          </div>
         </div>
       </div>
-      <div>
-        <div style="font-weight: 700;">Resources</div>
-        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-          <a href="#">Educational</a>
-          <a href="#">Nutrition</a>
+
+      <div
+        style="
+          max-width: 1180px;
+          margin: 18px auto;
+          color: rgba(255, 255, 255, 0.85);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div>Copyright © 2025 Bảo An Medicine</div>
+        <div style="display: flex; gap: 12px">
+          <a href="#">Instagram</a>
+          <a href="#">Youtube</a>
+          <a href="#">Facebook</a>
         </div>
       </div>
-    </div>
-  </div>
+    </footer>
 
-  <div style="max-width: 1180px; margin: 18px auto; color: rgba(255,255,255,0.85); display: flex; justify-content: space-between; align-items: center;">
-    <div>Copyright © 2025 Bảo An Medicine</div>
-    <div style="display: flex; gap: 12px;">
-      <a href="#">Instagram</a>
-      <a href="#">Youtube</a>
-      <a href="#">Facebook</a>
-    </div>
-  </div>
-</footer>
-
-<style>
-.h-scroll {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  padding: 8px 4px;
-}
-.product-card {
-  min-width: 220px;
-  max-width: 220px;
-  border-radius: 10px;
-  background: var(--card);
-  padding: 12px;
-  box-sizing: border-box;
-  scroll-snap-align: start;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  flex: 0 0 auto;
-}
-.product-card img {
-  width:100%;
-  height:120px;
-  object-fit:cover;
-  border-radius:8px;
-}
-.pc-title { font-weight:700; margin-top:8px; }
-.pc-sub { font-size:13px; color:var(--muted); }
-.scroll-btn {
-  background:var(--card);
-  border:1px solid rgba(0,0,0,0.06);
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-.cat-card {
-  display:flex;
-  gap:12px;
-  align-items:center;
-  padding:12px;
-  background:var(--card);
-  border-radius:10px;
-  text-decoration:none;
-  color:inherit;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-.cat-thumb { font-size:26px; width:48px; height:48px; display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(0,0,0,0.03); }
-.cat-title { font-weight:700; }
-.cat-sub { font-size:13px; color:var(--muted); }
-.muted { color: var(--muted); }
-</style>
-
-<script>
-(function(){
-  const container = document.querySelector('.h-scroll');
-
-  // helper tạo slug từ tên sản phẩm
-  function toSlug(str) {
-    return String(str || '')
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // bỏ dấu
-      .replace(/\s+/g, '-')                            // spaces → dash
-      .replace(/[^a-z0-9\-]/g, '')                     // loại ký tự lạ
-      .replace(/\-+/g, '-')
-      .replace(/^\-+|\-+$/g, '');
-  }
-
-  // xử lý click trên product-card: mở product-detail trong cùng tab
-  document.querySelectorAll('.product-card').forEach(card=>{
-    const titleEl = card.querySelector('.pc-title');
-    const title = titleEl ? titleEl.innerText.trim() : 'product';
-    const slug = toSlug(title);
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', function (e) {
-      // nếu người dùng click vào 1 link bên trong card (nếu có), cho phép hành vi mặc định
-      const tag = e.target && e.target.tagName && e.target.tagName.toLowerCase();
-      if (tag === 'a' || tag === 'button') return;
-      // chuyển trang trong cùng tab
-      window.location.href = `product-detail.html?product=${encodeURIComponent(slug)}`;
-    });
-  });
-
-  // nếu không có container (không cần thao tác kéo), vẫn ok
-  if (!container) return;
-
-  // --- (tùy chọn) các nút scroll nếu có ---
-  document.querySelectorAll('.scroll-btn').forEach(btn=>{
-    btn.addEventListener('click', function(){
-      const dir = this.dataset.dir;
-      const amount = Math.round(container.clientWidth * 0.6);
-      container.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
-    });
-  });
-
-  // drag-to-scroll (giữ lại nếu bạn muốn hỗ trợ kéo)
-  let isDown = false, startX = 0, scrollLeft = 0;
-  container.addEventListener('mousedown', (e)=>{
-    isDown = true;
-    container.classList.add('dragging');
-    startX = e.pageX - container.offsetLeft;
-    scrollLeft = container.scrollLeft;
-  });
-  container.addEventListener('mouseleave', ()=> { isDown = false; container.classList.remove('dragging'); });
-  container.addEventListener('mouseup', ()=> { isDown = false; container.classList.remove('dragging'); });
-  container.addEventListener('mousemove', (e)=>{
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - container.offsetLeft;
-    const walk = (x - startX);
-    container.scrollLeft = scrollLeft - walk;
-  });
-
-  // prevent image dragging
-  container.querySelectorAll('img').forEach(img => img.draggable = false);
-
-  // optional: infinite-simulate when near right
-  container.addEventListener('scroll', function(){
-    const nearRight = container.scrollWidth - container.clientWidth - container.scrollLeft < 50;
-    if (nearRight && !container.dataset.loading) {
-      container.dataset.loading = '1';
-      setTimeout(()=>{
-        const children = Array.from(container.querySelectorAll('.product-card'));
-        for (let i=0;i<3 && i<children.length;i++){
-          const clone = children[i].cloneNode(true);
-          container.appendChild(clone);
-        }
-        container.dataset.loading = '';
-      }, 500);
-    }
-  });
-
-})();
-</script>
-
-
-</body>
+    <script src="js/products.js"></script>
+  </body>
 </html>
