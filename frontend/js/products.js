@@ -68,7 +68,7 @@ const products = [
     price: 100000,
     cost_price: 60000,
     stock_quantity: 40,
-    category: "digestive",
+    category: "pain",
     is_prescription: false,
     image_url: "./assets/img/product4.jpg",
     is_active: true,
@@ -109,7 +109,7 @@ const products = [
     price: 140000,
     cost_price: 112000,
     stock_quantity: 20,
-    category: "cosmetics",
+    category: "other",
     is_prescription: false,
     image_url: "./assets/img/product6.jpg",
     is_active: true,
@@ -171,7 +171,7 @@ const products = [
     price: 95000,
     cost_price: 76000,
     stock_quantity: 35,
-    category: "skin",
+    category: "",
     is_prescription: false,
     image_url: "./assets/img/product9.jpg",
     is_active: true,
@@ -277,7 +277,9 @@ function formatPrice(price) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(price);
+  })
+    .format(price)
+    .replace(/\s?₫/, "đ");
 }
 
 // Hàm thêm vào giỏ hàng
@@ -488,6 +490,16 @@ function initProductCardClicks() {
       window.location.href = `product_detail.html?id=${productId}`;
     });
   });
+}
+
+// Hàm chuyển đến trang giỏ hàng
+function goToCart() {
+  if (cart.length === 0) {
+    alert("Bạn không có sản phẩm nào trong giỏ hàng");
+    return false;
+  }
+  window.location.href = "cart.html";
+  return true;
 }
 
 // Khởi tạo khi trang được tải

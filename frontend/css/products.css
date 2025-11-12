@@ -150,16 +150,21 @@ h2 {
 
 /* Products Grid Styles */
 .view-all-btn {
+  background: transparent;
   color: var(--primary);
-  text-decoration: none;
-  font-weight: 500;
+  border: 1px solid var(--primary);
   padding: 8px 16px;
   border-radius: 6px;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .view-all-btn:hover {
-  background-color: var(--light-gray);
+  background-color: var(--primary);
+  color: white;
 }
 
 .products-grid {
