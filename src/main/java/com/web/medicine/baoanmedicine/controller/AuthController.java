@@ -78,6 +78,6 @@ public class AuthController {
         String token = tokenProvider.generateToken(authentication);
 
         // 3. Trả về Token
-        return ResponseEntity.ok(new JwtAuthResponse(token));
+        return ResponseEntity.ok(new JwtAuthResponse(token, "Bearer"));
     }
 }
