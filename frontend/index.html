@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bảo An Medicine — Trang Chủ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+ <div class="logo">
+  <a href="index.html" class="home-link" aria-label="Về trang chủ" title="Về trang chủ" style="display:flex;align-items:center;gap:12px">
+    <img src="assets/logo.png" alt="logo" style="width:54px;height:54px;border-radius:10px;object-fit:cover">
+    <div>
+      <div class="brand">BẢO AN</div>
+      <div class="sub">MEDICINE.</div>
+    </div>
+  </a>
+</div>
+
+  <div class="search"><input placeholder="Tìm tên thuốc, công dụng..." /></div>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="#about-section">About Us</a>
+
+  <div class="dropdown">
+    <a href="products.html" class="dropdown-toggle">Products ▾</a>
+    <div class="dropdown-menu">
+      <a href="products.html#medicine">Medicine</a>
+      <a href="products.html#supplements">Supplements</a>
+      <a href="products.html#equipment">Medical Equipment</a>
+      <a href="products.html#cosmetics">Cosmetics</a>
+    </div>
+  </div>
+</nav>
+
+  <div class="icons">
+    <a href="cart.html" title="Cart" class="icon-btn">🛒<span class="icon-badge" id="cart-count">0</span></a>
+    <a href="login.html" title="Account" class="icon-btn">👤</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div>
+<div class="eyebrow"><a href="index.html" class="home-link">BẢO AN MEDICINE</a></div>
+      <h1>Vì sức khỏe<br/>hàng triệu người Việt.</h1>
+      <p class="lead">Chúng tôi tự hào mang đến cho bạn các loại thuốc, vitamin và sản phẩm chăm sóc sức khỏe chính hãng, được kiểm duyệt chất lượng nghiêm ngặt.
+Chúng tôi hướng đến sứ mệnh “Vì một cuộc sống khỏe mạnh hơn mỗi ngày.”</p>
+      <div style="margin-top:18px;display:flex;gap:12px;align-items:center">
+        <div style="width:56px;height:56px;border-radius:999px;background:#111"></div>
+        <div style="color:var(--muted)">
+          <p>100k+ khách hàng tin dùng</p>
+          <p>500+ sản phẩm y dược</p>
+          <p>10+ năm kinh nghiệm chăm sóc sức khỏe cộng đồng</p></div>
+      </div>
+    </div>
+    <div><img src="assets/banner.jpg" alt="hero" style="width:130%;border-radius:18px"></div>
+  </section>
+
+  <section style="margin-top:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div class="eyebrow" style="color:#ff4d89">Sản phẩm đặc trưng</div><h2>Chất lượng hàng đầu - dịch vụ tận tâm</h2><p class="lead" style="color:var(--muted)">Số lượng bán ra hơn 100 ngàn đơn hàng mỗi ngày trên toàn quốc.</p></div>
+      <a href="products.html"
+   style="width:120px;height:120px;border-radius:999px;border:2px solid rgba(0,0,0,0.06);
+          display:flex;align-items:center;justify-content:center;color:inherit;text-decoration:none;
+          transition:0.3s;">
+          All Products
+      </a>
+
+    </div>
+    <div class="products-row">
+      <div class="product"><div style="position:absolute;right:12px;top:10px;width:44px;height:44px;border-radius:50%;background:var(--blue-600);display:flex;align-items:center;justify-content:center"></div><div style="position:absolute;left:12px;bottom:16px;font-weight:700">Acetaminophen Pills</div></div>
+      <div class="product"></div>
+      <div class="product"></div>
+    </div>
+  </section>
+
+  <section class="section" id="about-section">
+  <div class="about-left">
+    <div class="eyebrow" style="color:var(--accent)">Về chúng tôi</div>
+    <h2>Cam kết đối với khách hàng</h2>
+    <p class="lead" style="color:var(--muted)">
+      Mang trọng trách giữ gìn sức khỏe của triệu người Việt.
+    </p>
+
+    <div class="commit-list">
+      <div class="commit-item">
+        <div class="commit-icon">💊</div>
+        <div class="commit-text">
+          <div class="commit-title">Cam kết chính hãng</div>
+          <div class="muted">Sản phẩm chính hãng 100% được nhập khẩu trực tiếp.</div>
+        </div>
+      </div>
+
+      <div class="commit-item">
+        <div class="commit-icon">🔬</div>
+        <div class="commit-text">
+          <div class="commit-title">Đạt chất lượng của bộ Y tế</div>
+          <div class="muted">Được kiểm nghiệm và chứng nhận an toàn.</div>
+        </div>
+      </div>
+
+      <div class="commit-item">
+        <div class="commit-icon">🌿</div>
+        <div class="commit-text">
+          <div class="commit-title">Thân thiện môi trường, bảo vệ sức khỏe bền vững</div>
+          <div class="muted">Thành phần an toàn, không ảnh hưởng đến sức khỏe lâu dài.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-right">
+    <img src="assets/about.jpg" alt="Cam kết Bảo An" class="about-img">
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="container" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;">
+    
+    <!-- Cột 1: Logo + mô tả -->
+    <div style="max-width: 420px;">
+      <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: white;">
+        <img src="assets/logo.png" 
+             style="width: 44px; height: 44px; border-radius: 8px;" 
+             alt="Bảo An Medicine Logo">
+        <div>
+          <div style="font-weight: 700; color: #fff;">BẢO AN</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.9);">MEDICINE.</div>
+        </div>
+      </a>
+
+      <p class="muted" style="color: rgba(255,255,255,0.9); margin-top: 12px;">
+        Chúng tôi cam kết cung cấp thuốc chính hãng và tư vấn chuyên môn cho khách hàng.
+      </p>
+    </div>
+
+    <!-- Cột 2: Company + Resources -->
+    <div style="display: flex; gap: 40px;">
+      <div>
+        <div style="font-weight: 700;">Company</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+          <a href="index.html#about-section">About Us</a>
+          <a href="products.html">Products</a>
+          <a href="#">Services</a>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight: 700;">Resources</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+          <a href="#">Educational</a>
+          <a href="#">Nutrition</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dòng bản quyền -->
+  <div style="max-width: 1180px; margin: 18px auto; color: rgba(255,255,255,0.85); display: flex; justify-content: space-between; align-items: center;">
+    <div>Copyright © 2025 Bảo An Medicine</div>
+    <div style="display: flex; gap: 12px;">
+      <a href="#">Instagram</a>
+      <a href="#">Youtube</a>
+      <a href="#">Facebook</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
+
