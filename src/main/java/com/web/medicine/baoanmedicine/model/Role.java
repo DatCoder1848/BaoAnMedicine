@@ -1,13 +1,23 @@
 package com.web.medicine.baoanmedicine.model;
 
-import java.util.Set;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-//--- Lớp Role ---
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "roles")
 public class Role {
-    private Integer roleId;
-    private String name; // Ví dụ: "ROLE_ADMIN", "ROLE_CUSTOMER"
 
-    // Quan hệ: Nhiều Role thuộc về nhiều User
-    // @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer roleId;
+
+    // Lưu tên Role dưới dạng String
+    @Enumerated(EnumType.STRING)
+    @Column(length = 60, nullable = false, unique = true)
+    private RoleName name;
 }
