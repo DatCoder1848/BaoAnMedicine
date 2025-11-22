@@ -29,25 +29,30 @@ public class User {
     private String username;
 
     @Column(nullable = false)
-    private String passwordHash; // Mật khẩu đã được mã hóa (PasswordEncoder)
+    private String passwordHash;
 
     @Column(nullable = false)
     private String email;
+
     private String fullName;
     private String address;
     private String phoneNumber;
 
+    // trạng thái hoạt động (Mặc định là true)
+    @Column(name = "is_active")
+    private boolean isActive = true;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    // Quan hệ Many-to-Many với Role
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    // SỬA 2: Bỏ CascadeType.ALL, chỉ dùng FetchType.EAGER
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    // Quan hệ: Một User có thể có nhiều Order
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
+
 }

@@ -23,7 +23,7 @@ public class AdminController {
 
     private final UserRepository userRepository;
 
-    // Hàm ánh xạ Entity sang DTO (Tái sử dụng từ UserController)
+    // Hàm ánh xạ Entity sang DTO
     private UserDto mapToUserDto(User user) {
         UserDto dto = new UserDto();
         dto.setUserId(user.getUserId());
@@ -40,6 +40,7 @@ public class AdminController {
     }
 
     // API: GET /api/admin/users
+    // Lấy danh sách toàn bộ người dùng
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<User> users = userRepository.findAll();
@@ -51,6 +52,7 @@ public class AdminController {
     }
 
     // API: PUT /api/admin/users/{id}/status
+    // Khóa hoặc Mở khóa người dùng
     @PutMapping("/users/{id}/status")
     public ResponseEntity<String> updateUserStatus(@PathVariable Long id,
                                                    @RequestBody UserStatusUpdateDto statusDto) {
@@ -58,8 +60,12 @@ public class AdminController {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + id));
 
-        // CHÚ Ý: Nếu bạn muốn lưu trạng thái, bạn cần thêm trường 'isActive' vào User Entity
-        // và lưu lại bằng userRepository.save(user);
+        // 1. Cập nhật trạng thái vào Entity
+        // Lưu ý: Với Lombok và field 'boolean isActive', setter thường là 'setActive'
+        user.setActive(statusDto.isActive());
+
+        // 2. Lưu thay đổi xuống Database
+        userRepository.save(user);
 
         String status = statusDto.isActive() ? "Mở khóa" : "Khóa";
 
