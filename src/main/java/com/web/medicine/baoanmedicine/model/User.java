@@ -2,6 +2,7 @@ package com.web.medicine.baoanmedicine.model;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.List;
 
 public class User {
 
