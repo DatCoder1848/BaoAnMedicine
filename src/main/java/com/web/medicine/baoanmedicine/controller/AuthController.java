@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 import java.util.Collections;
 import java.util.Optional;
 
@@ -34,9 +36,9 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
 
-    // API: POST /api/auth/register (Giữ nguyên)
+    // API: POST /api/auth/register
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto){
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterDto registerDto){ // <<< ĐÃ THÊM @Valid
 
         if(userRepository.existsByUsername(registerDto.getUsername())){
             return new ResponseEntity<>("Username đã tồn tại!", HttpStatus.BAD_REQUEST);
@@ -63,7 +65,7 @@ public class AuthController {
 
     // API: POST /api/auth/login
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<JwtAuthResponse> login(@Valid @RequestBody LoginDto loginDto){ // <<< ĐÃ THÊM @Valid
 
         // 1. Xác thực người dùng
         Authentication authentication = authenticationManager.authenticate(
