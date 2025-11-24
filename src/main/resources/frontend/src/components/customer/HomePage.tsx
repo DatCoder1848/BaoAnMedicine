@@ -2,6 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Pill, ShieldCheck, Truck, HeadphonesIcon, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from '../ui/carousel';
 
 const HomePage: React.FC = () => {
   const features = [
@@ -71,6 +78,31 @@ const HomePage: React.FC = () => {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Banner Section */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4 relative">
+          <Carousel className="rounded-xl shadow-lg max-h-72 mx-auto" opts={{ loop: true }}>
+            <CarouselPrevious className="z-10" />
+            <CarouselContent>
+              {[
+                '/src/assets/dhc.jpg',
+                '/src/assets/fishoil.jpg',
+                '/src/assets/urgo.jpg',
+              ].map((src, index) => (
+                <CarouselItem key={index}>
+                  <ImageWithFallback
+                    src={src}
+                    alt={`Banner ${index + 1}`}
+                    className="w-full rounded-xl object-cover max-h-72"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselNext className="z-10" />
+          </Carousel>
         </div>
       </section>
 
