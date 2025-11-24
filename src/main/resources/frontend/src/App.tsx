@@ -21,6 +21,7 @@ import AdminProducts from './components/admin/AdminProducts';
 import AdminOrders from './components/admin/AdminOrders';
 import AdminUsers from './components/admin/AdminUsers';
 import AdminSidebar from './components/fragments/AdminSidebar';
+import Chatbox from './components/Chatbox';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -104,6 +105,7 @@ function App() {
                   <Route path="/admin/*" element={<Navigate to="/login" />} />
                 </Routes>
               </main>
+              <Chatbox />
               <Footer />
             </>
           } />

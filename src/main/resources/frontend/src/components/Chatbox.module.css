@@ -1,0 +1,70 @@
+.chatbox-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chatbox-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #0078ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0, 120, 255, 0.6);
+  user-select: none;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.chatbox-button:hover {
+  background-color: #005bb5;
+  box-shadow: 0 6px 16px rgba(0, 91, 181, 0.8);
+}
+
+.chatbox-icon {
+  width: 28px;
+  height: 28px;
+  fill: white;
+}
+
+.chatbox-info {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background-color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  font-size: 14px;
+  color: #333;
+  min-width: 200px;
+  user-select: text;
+  transition: opacity 0.3s ease;
+}
+
+.chatbox-info div {
+  margin-bottom: 8px;
+}
+
+.chatbox-info div:last-child {
+  margin-bottom: 0;
+}
+
+.chatbox-link {
+  color: #0078ff;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chatbox-link:hover {
+  text-decoration: underline;
+}
