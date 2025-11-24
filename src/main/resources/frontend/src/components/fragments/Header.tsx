@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, cartCount }) => {
   return (
     <header className="bg-[#001a4d] text-white shadow-lg sticky top-0 z-50">
       {/* Top Bar */}
-      <div className="bg-[#00132e] py-1">
+      {/* <div className="bg-[#00132e] py-1">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, cartCount }) => {
             <span>Giao hàng nhanh 24/7</span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Header */}
       <div className="container mx-auto px-4 py-2">
