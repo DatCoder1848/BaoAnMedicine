@@ -33,10 +33,10 @@ public class OrderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody CheckoutRequestDTO request) {
         Long userId = userDetails.getUserId();
-        Order newOrder = orderService.placeOrder(userId, request);
+        OrderResponseDTO newOrder = orderService.placeOrder(userId, request); //fixed biến Order->OrderResposeDTO
 
         // SỬ DỤNG MAPPER TRƯỚC KHI TRẢ VỀ
-        return ResponseEntity.ok(orderMapper.toOrderResponseDto(newOrder));
+        return ResponseEntity.ok(newOrder);
     }
 
     // Dành cho GET /api/orders/my-orders [AUTH]
@@ -45,7 +45,7 @@ public class OrderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             Pageable pageable) {
         Long userId = userDetails.getUserId();
-        Page<Order> orders = orderService.getMyOrders(userId, pageable);
+        Page<OrderResponseDTO> orders = orderService.getMyOrders(userId, pageable);
         return ResponseEntity.ok(orders);
     }
 
@@ -60,7 +60,7 @@ public class OrderController {
         if (status != null && !status.isEmpty()) {
             return ResponseEntity.ok(orderService.findOrdersByStatus(status, pageable));
         }
-        return ResponseEntity.ok(orderService.findAll(pageable)); // Giả sử OrderService có findAll
+        return ResponseEntity.ok(orderService.findAllOrders(pageable)); // Giả sử OrderService có findAll
     }
 
     // Dành cho PUT /api/admin/orders/{id}/status [ADMIN]
@@ -69,7 +69,7 @@ public class OrderController {
             @PathVariable Long id,
             @RequestBody Map<String, String> statusUpdate) {
         String newStatus = statusUpdate.get("status");
-        Order updatedOrder = orderService.updateOrderStatus(id, newStatus);
+        OrderResponseDTO updatedOrder = orderService.updateOrderStatus(id, newStatus);
         return ResponseEntity.ok(updatedOrder);
     }
 
@@ -80,14 +80,19 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> getMyOrderDetail(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long id) {
-        // Logic: OrderService.findById(id) và kiểm tra Order.user.userId == userDetails.userId
-        return ResponseEntity.ok(orderService.findById(id));
-    }
+        Long userId = userDetails.getUserId();
 
+        // Logic: OrderService.findById(id) và kiểm tra Order.user.userId == userDetails.userId
+        return orderService.findOrderDtoById(id, userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
     // Lấy chi tiết đơn hàng cho Admin (M7)
     @GetMapping("/api/admin/orders/{id}")
     public ResponseEntity<OrderResponseDTO> getAdminOrderDetail(@PathVariable Long id) {
         // Logic: Chỉ cần OrderService.findById(id)
-        return ResponseEntity.ok(orderService.findById(id));
+        return orderService.findOrderDtoById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

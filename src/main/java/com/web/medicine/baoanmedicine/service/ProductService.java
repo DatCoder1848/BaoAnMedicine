@@ -7,4 +7,7 @@ import org.springframework.data.domain.Page;
 public interface ProductService {
     Page<ProductDto> findAll(int page, int size, Integer categoryId, String sortBy, String order);
     Product findByProductId(Long id);
+
+    //Them pthuc
+    Product save(Product product);
 }

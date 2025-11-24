@@ -58,10 +58,16 @@ public class OrderService {
 
         // --- 2. Xử lý Thanh toán (Factory Pattern) ---
         PaymentProcessor processor = paymentFactory.getProcessor(request.getPaymentMethod());
-        boolean paymentSuccess = processor.processPayment(totalAmount, request.getPaymentMethod());
-
-        if (!paymentSuccess) {
-            throw new RuntimeException("Lỗi thanh toán: Giao dịch không thành công.");
+        if (processor == null) {
+            throw new RuntimeException("Lỗi: Phương thức thanh toán không hỗ trợ: " + request.getPaymentMethod());
+        }
+        try {
+            boolean paymentSuccess = processor.processPayment(totalAmount, request.getPaymentMethod());
+            if (!paymentSuccess) {
+                throw new RuntimeException("Lỗi thanh toán: Giao dịch không thành công.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi thanh toán: " + e.getMessage());
         }
 
         // --- 3. Kiểm tra, Trừ Tồn kho & Tạo OrderItems ---
@@ -70,7 +76,10 @@ public class OrderService {
         for (CartItem cartItem : cart.getCartItems()) {
             Product product = cartItem.getProduct();
 
-            if (cartItem.getQuantity() > product.getStockQuantity()) {
+            if (product == null || product.getStockQuantity() == null || cartItem.getQuantity() > product.getStockQuantity()) {
+                throw new RuntimeException("Lỗi  Tồn kho: Sản phẩm " + product.getName() + " không đủ số lượng.");
+            }
+            if (product.getStockQuantity() - cartItem.getQuantity() < 0) {
                 throw new RuntimeException("Lỗi Tồn kho: Sản phẩm " + product.getName() + " không đủ số lượng.");
             }
 
@@ -99,10 +108,17 @@ public class OrderService {
         return orders.map(orderMapper::toOrderResponseDto);
     }
 
-    // 3. Lấy chi tiết đơn hàng theo ID (Dùng cho cả Khách hàng và Admin) - Trả về DTO
+    // 3. Lấy chi tiết đơn hàng cho khách (làm riêng khách và Admin)
+    public Optional<OrderResponseDTO> findOrderDtoById(Long orderId, Long userId) {
+        return orderRepository.findById(orderId)
+                .filter(order -> order.getUser().getUserId().equals(userId)) //Kiem tra quyền
+                .map(orderMapper::toOrderResponseDto);
+    }
+
+    //3b. Lấy chi tiết đơn hàng cho Admin
     public Optional<OrderResponseDTO> findOrderDtoById(Long orderId) {
         return orderRepository.findById(orderId)
-                .map(orderMapper::toOrderResponseDto); // Chỉ chuyển sang DTO nếu tìm thấy
+                .map(orderMapper::toOrderResponseDto);
     }
 
     // 4. Lấy tất cả đơn hàng (Admin) - Trả về Page<DTO>
