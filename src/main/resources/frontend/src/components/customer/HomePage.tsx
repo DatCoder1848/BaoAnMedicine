@@ -84,24 +84,37 @@ const HomePage: React.FC = () => {
       {/* Banner Section */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4 relative">
-          <Carousel className="rounded-xl shadow-lg max-h-72 mx-auto" opts={{ loop: true }}>
-            <CarouselPrevious className="z-10" />
-            <CarouselContent>
+          <Carousel className="rounded-xl shadow-lg max-h-72 mx-auto" opts={{ loop: true, slidesToScroll: 1 }}>
+            <CarouselPrevious className="z-10 !bg-transparent !shadow-none !border-none !p-0">
+              {/* Using ArrowLeft from lucide-react as standalone icon without button styling */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </CarouselPrevious>
+            <CarouselContent className="!flex-nowrap overflow-hidden">
               {[
                 '/src/assets/dhc.jpg',
                 '/src/assets/fishoil.jpg',
                 '/src/assets/urgo.jpg',
+                '/src/assets/maige.jpg',
+                '/src/assets/paracetamol.jpg',
+                '/src/assets/zinc.jpg',
               ].map((src, index) => (
-                <CarouselItem key={index}>
+                <CarouselItem key={index} className="basis-full flex-shrink-0 pl-4">
                   <ImageWithFallback
                     src={src}
                     alt={`Banner ${index + 1}`}
-                    className="w-full rounded-xl object-cover max-h-72"
+                    className="w-full rounded-xl object-cover max-h-44 max-w-full"
                   />
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselNext className="z-10" />
+            <CarouselNext className="z-10 right-0 !bg-transparent !shadow-none !border-none !p-0">
+              {/* Using ArrowRight from lucide-react as standalone icon without button styling */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </CarouselNext>
           </Carousel>
         </div>
       </section>
