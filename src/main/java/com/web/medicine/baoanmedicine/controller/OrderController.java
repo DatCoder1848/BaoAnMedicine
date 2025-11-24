@@ -1,9 +1,11 @@
 package com.web.medicine.baoanmedicine.controller;
 
+import com.web.medicine.baoanmedicine.config.UserDetailsImpl;
 import com.web.medicine.baoanmedicine.dto.CheckoutRequestDTO;
 import com.web.medicine.baoanmedicine.dto.response.OrderResponseDTO;
 import com.web.medicine.baoanmedicine.model.Order;
 import com.web.medicine.baoanmedicine.service.OrderService;
+import com.web.medicine.baoanmedicine.utils.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +17,15 @@ import java.util.Map;
 @RestController
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+
+    private final OrderService orderService;
+    private final OrderMapper orderMapper;
+
+    OrderController(OrderService orderService, OrderMapper orderMapper) {
+        this.orderService = orderService;
+        this.orderMapper = orderMapper;
+    }
+
 
     // Dành cho POST /api/orders/checkout [AUTH]
     @PostMapping("/api/orders/checkout")

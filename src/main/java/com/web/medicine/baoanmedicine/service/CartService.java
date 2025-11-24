@@ -8,11 +8,12 @@ import com.web.medicine.baoanmedicine.model.Product;
 import com.web.medicine.baoanmedicine.model.User;
 import com.web.medicine.baoanmedicine.repository.CartItemRepository;
 import com.web.medicine.baoanmedicine.repository.CartRepository;
+import com.web.medicine.baoanmedicine.repository.UserRepository;
 import com.web.medicine.baoanmedicine.utils.mapper.CartMapper; // Mapper mới
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -30,6 +31,8 @@ public class CartService {
 
     // Cần có Mock Interface/Service thật của Vân
     @Autowired private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
     // --- CÁC HÀM CÔNG KHAI (PUBLIC METHODS) ---
 
@@ -48,8 +51,7 @@ public class CartService {
     public CartResponseDTO addOrUpdateItem(Long userId, AddItemToCartDTO request) {
         Cart cart = getCartByUser(userId);
 
-        Product product = productService.findById(request.getProductId())
-                .orElseThrow(() -> new RuntimeException("Lỗi: Sản phẩm không tồn tại."));
+        Product product = productService.findByProductId(request.getProductId());
 
         // **LOGIC CHÍNH: Kiểm tra tồn kho và thêm/cập nhật**
         Optional<CartItem> existingItemOpt = cartItemRepository
@@ -145,7 +147,7 @@ public class CartService {
     // --- CÁC HÀM HỖ TRỢ NỘI BỘ (PRIVATE METHODS) ---
 
     // Hàm hỗ trợ: Lấy Entity Cart (vẫn cần Entity cho logic nghiệp vụ)
-    private Cart getCartByUser(Long userId) {
+    public Cart getCartByUser(Long userId) {
         // Hàm này vẫn trả về Entity để phục vụ cho logic nghiệp vụ nội bộ
         return cartRepository.findByUserId(userId)
                 .orElseGet(() -> createNewCart(userId));
@@ -153,7 +155,7 @@ public class CartService {
 
     // Hàm hỗ trợ: tạo Giỏ hàng mới
     private Cart createNewCart(Long userId) {
-        User user = userService.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Lỗi: Người dùng không tồn tại."));
         Cart newCart = new Cart();
         newCart.setUser(user);

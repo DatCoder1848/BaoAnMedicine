@@ -1,8 +1,11 @@
 package com.web.medicine.baoanmedicine.controller;
 
+import com.web.medicine.baoanmedicine.config.UserDetailsImpl;
 import com.web.medicine.baoanmedicine.dto.AddItemToCartDTO;
+import com.web.medicine.baoanmedicine.dto.response.CartResponseDTO;
 import com.web.medicine.baoanmedicine.model.Cart;
 import com.web.medicine.baoanmedicine.service.CartService;
+import com.web.medicine.baoanmedicine.utils.mapper.CartMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,10 +34,9 @@ public class CartController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody AddItemToCartDTO request) {
         Long userId = userDetails.getUserId();
-        Cart updatedCart = cartService.addOrUpdateItem(userId, request);
+        CartResponseDTO updatedCart = cartService.addOrUpdateItem(userId, request);
 
-        // SỬ DỤNG MAPPER TRƯỚC KHI TRẢ VỀ
-        return ResponseEntity.ok(cartMapper.toCartResponseDto(updatedCart));
+        return ResponseEntity.ok(updatedCart);
     }
 
     // Dành cho DELETE /api/cart/remove/{productId} [AUTH]
