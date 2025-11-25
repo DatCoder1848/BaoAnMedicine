@@ -1,44 +1,72 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Pill, ShieldCheck, Truck, HeadphonesIcon, ArrowRight } from 'lucide-react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  Pill,
+  ShieldCheck,
+  Truck,
+  HeadphonesIcon,
+  ArrowRight,
+} from "lucide-react";
+import { ImageWithFallback } from "../figma/ImageWithFallback";
+import dhc from "../../assets/dhc.jpg";
+import fishoil from "../../assets/fishoil.jpg";
+import urgo from "../../assets/urgo.jpg";
+import maiger from "../../assets/maiger.jpg";
+import paracetamol from "../../assets/paracetamol.jpg";
+import zinc from "../../assets/zinc.jpg";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-} from '../ui/carousel';
+} from "../ui/carousel";
 
 const HomePage: React.FC = () => {
   const features = [
     {
       icon: ShieldCheck,
-      title: 'Thuốc chính hãng',
-      description: '100% sản phẩm được nhập khẩu từ nhà thuốc uy tín',
+      title: "Thuốc chính hãng",
+      description: "100% sản phẩm được nhập khẩu từ nhà thuốc uy tín",
     },
     {
       icon: Truck,
-      title: 'Giao hàng nhanh',
-      description: 'Giao hàng tận nơi trong vòng 2-4 giờ',
+      title: "Giao hàng nhanh",
+      description: "Giao hàng tận nơi trong vòng 2-4 giờ",
     },
     {
       icon: HeadphonesIcon,
-      title: 'Hỗ trợ 24/7',
-      description: 'Đội ngũ dược sĩ tư vấn miễn phí',
+      title: "Hỗ trợ 24/7",
+      description: "Đội ngũ dược sĩ tư vấn miễn phí",
     },
     {
       icon: Pill,
-      title: 'Đa dạng sản phẩm',
-      description: 'Hơn 10,000+ sản phẩm thuốc và TPCN',
+      title: "Đa dạng sản phẩm",
+      description: "Hơn 10,000+ sản phẩm thuốc và TPCN",
     },
   ];
 
   const categories = [
-    { name: 'Thuốc kê đơn', link: '/products?category=prescription', color: 'from-red-500 to-pink-500' },
-    { name: 'Thuốc không kê đơn', link: '/products?category=otc', color: 'from-blue-500 to-cyan-500' },
-    { name: 'Thực phẩm chức năng', link: '/products?category=supplement', color: 'from-green-500 to-emerald-500' },
-    { name: 'Chăm sóc sức khỏe', link: '/products?category=healthcare', color: 'from-purple-500 to-indigo-500' },
+    {
+      name: "Thuốc kê đơn",
+      link: "/products?category=prescription",
+      color: "from-red-500 to-pink-500",
+    },
+    {
+      name: "Thuốc không kê đơn",
+      link: "/products?category=otc",
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      name: "Thực phẩm chức năng",
+      link: "/products?category=supplement",
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      name: "Chăm sóc sức khỏe",
+      link: "/products?category=healthcare",
+      color: "from-purple-500 to-indigo-500",
+    },
   ];
 
   return (
@@ -48,11 +76,10 @@ const HomePage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-5xl mb-6">
-                Nhà Thuốc Bảo An
-              </h1>
+              <h1 className="text-5xl mb-6">Nhà Thuốc Bảo An</h1>
               <p className="text-xl mb-8 opacity-90">
-                Chăm sóc sức khỏe của bạn và gia đình với sản phẩm chính hãng, giá tốt nhất thị trường
+                Chăm sóc sức khỏe của bạn và gia đình với sản phẩm chính hãng,
+                giá tốt nhất thị trường
               </p>
               <div className="flex gap-4">
                 <Link
@@ -72,7 +99,7 @@ const HomePage: React.FC = () => {
             </div>
             <div className="relative">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1596522016734-8e6136fe5cfa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaGFybWFjeSUyMG1lZGljaW5lfGVufDF8fHx8MTc2MzczNTMxMnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                src="https://www.tainstruments.com/wp-content/uploads/AdobeStock_123504209-1-scaled.jpeg"
                 alt="Pharmacy"
                 className="rounded-2xl shadow-2xl"
               />
@@ -84,35 +111,58 @@ const HomePage: React.FC = () => {
       {/* Banner Section */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4 relative">
-          <Carousel className="rounded-xl shadow-lg max-h-72 mx-auto" opts={{ loop: true, slidesToScroll: 1 }}>
-            <CarouselPrevious className="z-10 !bg-transparent !shadow-none !border-none !p-0">
+          <Carousel
+            className="rounded-xl shadow-lg mx-auto h-72 w-full"
+            opts={{ loop: true, slidesToScroll: 1, align: "start" }}
+          >
+            <CarouselPrevious className="z-10 left-2 !bg-transparent !shadow-none !border-none !p-0">
               {/* Using ArrowLeft from lucide-react as standalone icon without button styling */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                xmlns="http://www.w3.org/1500/svg"
+                className="h-8 w-8 text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </CarouselPrevious>
-            <CarouselContent className="!flex-nowrap overflow-hidden">
-              {[
-                '/src/assets/dhc.jpg',
-                '/src/assets/fishoil.jpg',
-                '/src/assets/urgo.jpg',
-                '/src/assets/maige.jpg',
-                '/src/assets/paracetamol.jpg',
-                '/src/assets/zinc.jpg',
-              ].map((src, index) => (
-                <CarouselItem key={index} className="basis-full flex-shrink-0 pl-4">
-                  <ImageWithFallback
-                    src={src}
-                    alt={`Banner ${index + 1}`}
-                    className="w-full rounded-xl object-cover max-h-44 max-w-full"
-                  />
-                </CarouselItem>
-              ))}
+            <CarouselContent className="ml-0">
+              {[dhc, fishoil, urgo, maiger, paracetamol, zinc].map(
+                (src, index) => (
+                  <CarouselItem
+                    key={index}
+                    className="basis-11/12 flex-shrink-0 pr-4"
+                  >
+                    <ImageWithFallback
+                      src={src}
+                      alt={`Banner ${index + 1}`}
+                      className="w-full rounded-xl object-cover h-72"
+                    />
+                  </CarouselItem>
+                )
+              )}
             </CarouselContent>
-            <CarouselNext className="z-10 right-0 !bg-transparent !shadow-none !border-none !p-0">
+            <CarouselNext className="z-10 right-2 !bg-transparent !shadow-none !border-none !p-0">
               {/* Using ArrowRight from lucide-react as standalone icon without button styling */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </CarouselNext>
           </Carousel>
@@ -162,17 +212,44 @@ const HomePage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-12">
             <h2>Sản phẩm phổ biến</h2>
-            <Link to="/products" className="text-cyan-600 hover:text-cyan-700 flex items-center gap-2">
+            <Link
+              to="/products"
+              className="text-cyan-600 hover:text-cyan-700 flex items-center gap-2"
+            >
               Xem tất cả
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
           <div className="grid md:grid-cols-4 gap-6">
             {[
-              { id: 1, name: 'Paracetamol 500mg', price: 15000, image: 'https://images.unsplash.com/photo-1601302030807-8cfadb191a24?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaWxscyUyMHZpdGFtaW5zfGVufDF8fHx8MTc2MzczNTMxM3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral' },
-              { id: 2, name: 'Vitamin C 1000mg', price: 120000, image: 'https://images.unsplash.com/photo-1601302030807-8cfadb191a24?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaWxscyUyMHZpdGFtaW5zfGVufDF8fHx8MTc2MzczNTMxM3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral' },
-              { id: 3, name: 'Amoxicillin 500mg', price: 45000, image: 'https://images.unsplash.com/photo-1630094539596-da3ab25241d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwcHJlc2NyaXB0aW9ufGVufDF8fHx8MTc2MzY5NTQ1Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral' },
-              { id: 4, name: 'Omega-3 Fish Oil', price: 250000, image: 'https://images.unsplash.com/photo-1706777227772-629b1cdb8a9f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGhjYXJlJTIwd2VsbG5lc3N8ZW58MXx8fHwxNzYzNzM1MzE0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral' },
+              {
+                id: 1,
+                name: "Paracetamol 500mg",
+                price: 15000,
+                image:
+                  "https://www.mediplantex.com/upload/product/thumbs/8594648bd43d66f8f602e77c7cccf242.jpg",
+              },
+              {
+                id: 2,
+                name: "Vitamin C 1000mg",
+                price: 120000,
+                image:
+                  "https://cdn.famitaa.net/storage/uploads/noidung/vitamin-c-plus-1000-mg-dr-life-24-vien-sui-bo-sung-vitamin-c_00471.webp",
+              },
+              {
+                id: 3,
+                name: "Amoxicillin 500mg",
+                price: 45000,
+                image:
+                  "https://domesco.com/pictures/catalog/san-pham-2025/AMOXICILLIN-500-mg-Do-Vang-893110107324-Hop-10-vi-x-10-VNC-.png",
+              },
+              {
+                id: 4,
+                name: "Omega-3 Fish Oil",
+                price: 250000,
+                image:
+                  "https://chuoinhathuocminhchau.com/wp-content/uploads/2024/03/OMEGA-3-FISH-OIL-NATURE-GIFT-CHAI-100-VIEN-chinh-hang-768x767.jpg",
+              },
             ].map((product) => (
               <Link
                 key={product.id}
@@ -188,7 +265,9 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm mb-2">{product.name}</h3>
-                  <p className="text-cyan-600">{product.price.toLocaleString('vi-VN')}đ</p>
+                  <p className="text-cyan-600">
+                    {product.price.toLocaleString("vi-VN")}đ
+                  </p>
                 </div>
               </Link>
             ))}
