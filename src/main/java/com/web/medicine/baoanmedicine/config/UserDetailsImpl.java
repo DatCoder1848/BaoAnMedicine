@@ -39,7 +39,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUserId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPasswordHash(), // Sử dụng passwordHash làm password
+                user.getPassword(), // Sử dụng passwordHash làm password
                 authorities);
     }
 

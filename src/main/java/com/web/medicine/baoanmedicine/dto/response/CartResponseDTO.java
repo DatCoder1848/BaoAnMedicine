@@ -15,8 +15,7 @@ import java.math.BigDecimal;
 public class CartResponseDTO {
     private Long cartId;
     private Long userId;
+    private Integer totalItems; // Tổng số lượng sản phẩm (VD: 5 hộp thuốc)
     private BigDecimal subTotal; // Tính toán tổng tiền
     private List<CartItemDTO> items;
-
-    // Getters, Setters, Constructors (Dùng Lombok)
 }

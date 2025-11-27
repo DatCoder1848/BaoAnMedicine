@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: BaoAnMedicine
+  datasource:
+    url: "jdbc:mysql://localhost:3308/baoAn_db?createDatabaseIfNotExist=true"
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+server:
+  port: 2017
+
+app:
+  jwt-secret: "U29uZ0tob25nR2lhbktob25nSG9uS2hvbmdPYW5UcmFjaFNvbmdNaW1DdWRpVm9pVGh1VGhhY2hDaG9uZ0dhaQ=="
+
+    # Khớp với @Value("${app.jwt-expiration-milliseconds}")
+  jwt-expiration-milliseconds: 3600000
+
+# Google Gemini API Config
+gemini:
+  api:
+    key: "AIzaSyBCgaZ_7Ud_gRMmodsNuBDbbk9ilVaJmyk"
+    url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="

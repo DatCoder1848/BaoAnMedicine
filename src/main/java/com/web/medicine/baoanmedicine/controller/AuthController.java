@@ -49,7 +49,7 @@ public class AuthController {
         user.setUsername(registerDto.getUsername());
         user.setEmail(registerDto.getEmail());
         user.setFullName(registerDto.getFullName());
-        user.setPasswordHash(passwordEncoder.encode(registerDto.getPassword()));
+        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
 
         Optional<Role> customerRole = roleRepository.findByName(RoleName.ROLE_CUSTOMER);
         if (customerRole.isEmpty()) {

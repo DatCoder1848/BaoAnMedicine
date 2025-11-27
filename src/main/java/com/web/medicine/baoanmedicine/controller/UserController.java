@@ -23,7 +23,6 @@ public class UserController {
     // Hàm ánh xạ Entity sang DTO
     private UserDto mapToUserDto(User user) {
         UserDto dto = new UserDto();
-        dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());

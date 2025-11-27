@@ -26,7 +26,6 @@ public class AdminController {
     // Hàm ánh xạ Entity sang DTO (Tái sử dụng từ UserController)
     private UserDto mapToUserDto(User user) {
         UserDto dto = new UserDto();
-        dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());

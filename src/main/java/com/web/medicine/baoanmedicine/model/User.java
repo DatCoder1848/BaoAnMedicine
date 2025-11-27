@@ -1,19 +1,15 @@
 package com.web.medicine.baoanmedicine.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.List;
 
 @Entity
-@Data
+@Data // Lombok Data bao gồm Getter, Setter, ToString, v.v.
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users", uniqueConstraints = {
@@ -30,7 +26,7 @@ public class User {
     private String username;
 
     @Column(nullable = false)
-    private String passwordHash; // Mật khẩu đã được mã hóa (PasswordEncoder)
+    private String password;
 
     @Column(nullable = false)
     private String email;
@@ -41,14 +37,17 @@ public class User {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    // Quan hệ Many-to-Many với Role
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    // Quan hệ: Một User có thể có nhiều Order
+    // SỬA: mappedBy phải trỏ tới tên biến "user" trong class Order
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
+
+    // Thêm quan hệ với Cart nếu chưa có
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Cart cart;
 }

@@ -6,26 +6,54 @@ import com.web.medicine.baoanmedicine.dto.response.ProductMiniDTO;
 import com.web.medicine.baoanmedicine.model.Cart;
 import com.web.medicine.baoanmedicine.model.CartItem;
 import com.web.medicine.baoanmedicine.model.Product;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+
 
 @Mapper(componentModel = "spring")
 public interface CartMapper {
 
-    // Instance tĩnh để có thể dùng thủ công nếu cần
     CartMapper INSTANCE = Mappers.getMapper(CartMapper.class);
 
-    // Mapping từ Product Entity sang DTO cơ bản
+    // --- PRODUCT MINI ---
     @Mapping(source = "price", target = "price")
     ProductMiniDTO toProductMiniDto(Product product);
 
-    // Mapping từ CartItem Entity sang DTO
+    // --- CART ITEM ---
     CartItemDTO toCartItemDto(CartItem cartItem);
 
-    // Mapping từ Cart Entity sang Response DTO
-    @Mapping(source = "user.userId", target = "userId") // Lấy ID từ đối tượng User
+    // --- CART RESPONSE ---
+    @Mapping(source = "user.userId", target = "userId")
     @Mapping(source = "cartItems", target = "items")
-    // Chú ý: subTotal phải được tính toán trong Service hoặc Getter trong DTO
+    // MapStruct sẽ tự động map các trường cùng tên.
+    // Các trường tính toán (totalItems, subTotal) sẽ được xử lý ở @AfterMapping bên dưới
     CartResponseDTO toCartResponseDto(Cart cart);
+
+    // LOGIC TÍNH TOÁN: Chạy sau khi MapStruct map xong các trường cơ bản
+    @AfterMapping
+    default void calculateTotals(Cart cart, @MappingTarget CartResponseDTO dto) {
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            dto.setTotalItems(0);
+            dto.setSubTotal(BigDecimal.ZERO);
+            return;
+        }
+
+        // 1. Tính tổng số lượng sản phẩm (Ví dụ: 2 hộp thuốc A + 1 hộp thuốc B = 3)
+        int totalItems = cart.getCartItems().stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
+        dto.setTotalItems(totalItems);
+
+        // 2. Tính tổng tiền tạm tính (SubTotal)
+        BigDecimal subTotal = cart.getCartItems().stream()
+                .map(item -> item.getPriceAtAddition().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        dto.setSubTotal(subTotal);
+    }
 }

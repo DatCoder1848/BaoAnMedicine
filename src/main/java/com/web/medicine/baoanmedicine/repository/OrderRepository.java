@@ -10,5 +10,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUser_UserId(Long userId, Pageable pageable);
 
     // Tìm kiếm đơn hàng theo trạng thái (cho API /admin/orders)
-    Page<Order> findByStatus(String status, Pageable pageable);
+    Page<Order> findByOrderStatus(String status, Pageable pageable);
 }

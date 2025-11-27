@@ -3,9 +3,7 @@ package com.web.medicine.baoanmedicine.controller;
 import com.web.medicine.baoanmedicine.config.UserDetailsImpl;
 import com.web.medicine.baoanmedicine.dto.AddItemToCartDTO;
 import com.web.medicine.baoanmedicine.dto.response.CartResponseDTO;
-import com.web.medicine.baoanmedicine.model.Cart;
 import com.web.medicine.baoanmedicine.service.CartService;
-import com.web.medicine.baoanmedicine.utils.mapper.CartMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,30 +14,36 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
 
     @Autowired private CartService cartService;
-    @Autowired private CartMapper cartMapper; // Tiêm Mapper vào
+    // LOẠI BỎ CartMapper ở đây vì Service đã trả về DTO rồi.
 
-    // Dành cho GET /api/cart [AUTH]
+    // 1. Xem giỏ hàng
     @GetMapping
     public ResponseEntity<CartResponseDTO> getCart(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getUserId();
-        Cart cart = cartService.getCartByUser(userId);
-
-        // SỬ DỤNG MAPPER TRƯỚC KHI TRẢ VỀ
-        return ResponseEntity.ok(cartMapper.toCartResponseDto(cart));
+        // Gọi hàm getCartResponse (trả về DTO) thay vì getCartByUser (trả về Entity)
+        return ResponseEntity.ok(cartService.getCartResponse(userId));
     }
 
-    // Dành cho POST /api/cart/add [AUTH]
+    // 2. Thêm vào giỏ
     @PostMapping("/add")
     public ResponseEntity<CartResponseDTO> addItemToCart(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody AddItemToCartDTO request) {
         Long userId = userDetails.getUserId();
-        CartResponseDTO updatedCart = cartService.addOrUpdateItem(userId, request);
-
-        return ResponseEntity.ok(updatedCart);
+        return ResponseEntity.ok(cartService.addOrUpdateItem(userId, request));
     }
 
-    // Dành cho DELETE /api/cart/remove/{productId} [AUTH]
+    // 3. Cập nhật số lượng (API này BẠN ĐANG THIẾU trong file gửi)
+    @PutMapping("/update")
+    public ResponseEntity<CartResponseDTO> updateItemQuantity(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long productId,
+            @RequestParam int quantity) {
+        Long userId = userDetails.getUserId();
+        return ResponseEntity.ok(cartService.updateItemQuantity(userId, productId, quantity));
+    }
+
+    // 4. Xóa
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<?> removeItemFromCart(
             @AuthenticationPrincipal UserDetailsImpl userDetails,

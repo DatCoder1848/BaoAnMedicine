@@ -1,22 +1,25 @@
 package com.web.medicine.baoanmedicine.service;
 
 import com.web.medicine.baoanmedicine.dto.CheckoutRequestDTO;
-import com.web.medicine.baoanmedicine.dto.response.OrderResponseDTO; // DTO mới
+import com.web.medicine.baoanmedicine.dto.response.OrderResponseDTO;
+import com.web.medicine.baoanmedicine.enums.OrderStatus;
+import com.web.medicine.baoanmedicine.enums.PaymentStatus;
 import com.web.medicine.baoanmedicine.model.*;
 import com.web.medicine.baoanmedicine.repository.OrderItemRepository;
 import com.web.medicine.baoanmedicine.repository.OrderRepository;
 import com.web.medicine.baoanmedicine.utils.PaymentProcessor;
 import com.web.medicine.baoanmedicine.utils.PaymentProcessorFactory;
-import com.web.medicine.baoanmedicine.utils.mapper.OrderMapper; // Mapper mới
+import com.web.medicine.baoanmedicine.utils.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class OrderService {
@@ -24,72 +27,105 @@ public class OrderService {
     @Autowired private OrderRepository orderRepository;
     @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private CartService cartService;
-    @Autowired private ProductService productService;
-    @Autowired private PaymentProcessorFactory paymentFactory;
     @Autowired private UserService userService;
-
-    // TIÊM MAPPER VÀO SERVICE
+    @Autowired private PaymentProcessorFactory paymentFactory;
     @Autowired private OrderMapper orderMapper;
 
-    // --- CÁC HÀM QUẢN LÝ NGHIỆP VỤ ---
+    // HAI SERVICE QUAN TRỌNG MỚI
+    @Autowired private InventoryService inventoryService; // Để trừ kho FIFO
+    @Autowired private MarketingService marketingService; // Để tính mã giảm giá
 
-    // Hàm hỗ trợ: Xóa giỏ hàng (Giữ nguyên logic Entity)
-    @Transactional
-    public void clearCart(Cart cart) {
-        cartService.clearCart(cart); // Gọi lại hàm clearCart đã hoàn thiện trong CartService
-    }
-
-    // 1. Xử lý Đặt hàng (POST /api/orders/checkout) - Trả về DTO
-    @Transactional(rollbackOn = {RuntimeException.class})
+    @Transactional(rollbackFor = Exception.class)
     public OrderResponseDTO placeOrder(Long userId, CheckoutRequestDTO request) {
-
-        // --- 1. Chuẩn bị dữ liệu & Kiểm tra ---
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Lỗi: Người dùng không tồn tại."));
-
-        // Lấy Entity Cart. Lưu ý: Cần dùng hàm trả về Entity (private/internal) từ CartService
-        Cart cart = cartService.getCartByUser(userId); // Giả định hàm này trả về Entity Cart
+        // 1. Lấy dữ liệu
+        User user = userService.getUserById(userId);
+        Cart cart = cartService.getCartByUser(userId);
 
         if (cart.getCartItems().isEmpty()) {
-            throw new RuntimeException("Lỗi: Giỏ hàng trống.");
+            throw new RuntimeException("Giỏ hàng trống, không thể đặt hàng.");
         }
 
-        BigDecimal totalAmount = calculateTotal(cart);
+        // 2. Tính toán tiền nong (Financial Calculation)
+        BigDecimal originalAmount = calculateOriginalTotal(cart);
 
-        // --- 2. Xử lý Thanh toán (Factory Pattern) ---
+        // Gọi Marketing Service để tính giảm giá
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (request.getCouponCode() != null && !request.getCouponCode().isEmpty()) {
+            discountAmount = marketingService.calculateDiscount(request.getCouponCode(), originalAmount);
+        }
+
+        // Tính tổng cuối (Có thể cộng thêm phí ship nếu cần)
+        BigDecimal shippingFee = BigDecimal.ZERO; // Có thể tách logic tính ship riêng
+        BigDecimal finalAmount = originalAmount.subtract(discountAmount).add(shippingFee);
+        if (finalAmount.compareTo(BigDecimal.ZERO) < 0) finalAmount = BigDecimal.ZERO;
+
+        // 3. Xử lý Thanh toán (Payment)
         PaymentProcessor processor = paymentFactory.getProcessor(request.getPaymentMethod());
-        boolean paymentSuccess = processor.processPayment(totalAmount, request.getPaymentMethod());
-
+        boolean paymentSuccess = processor.processPayment(finalAmount, request.getPaymentMethod());
         if (!paymentSuccess) {
-            throw new RuntimeException("Lỗi thanh toán: Giao dịch không thành công.");
+            throw new RuntimeException("Thanh toán thất bại.");
         }
 
-        // --- 3. Kiểm tra, Trừ Tồn kho & Tạo OrderItems ---
-        Order newOrder = createNewOrderEntity(user, totalAmount, request, processor.getPaymentMethodName());
+        // 4. Khởi tạo Đơn hàng (Order Entity)
+        Order order = new Order();
+        order.setUser(user);
+        order.setOrderDate(LocalDateTime.now());
+        order.setOriginalAmount(originalAmount);
+        order.setDiscountAmount(discountAmount);
+        order.setShippingFee(shippingFee);
+        order.setFinalAmount(finalAmount);
+        order.setPaymentStatus(PaymentStatus.PENDING); // Hoặc PAID nếu thanh toán online thành công ngay
+        order.setOrderStatus(OrderStatus.NEW);
+        order.setShippingAddress(request.getShippingAddress());
+        order.setCouponCodeApplied(request.getCouponCode());
 
+        // Lưu trước để có ID gán cho OrderItem (tùy cấu hình Cascade)
+        Order savedOrder = orderRepository.save(order);
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        // 5. Xử lý Inventory & OrderItems
         for (CartItem cartItem : cart.getCartItems()) {
             Product product = cartItem.getProduct();
+            int quantity = cartItem.getQuantity();
 
-            if (cartItem.getQuantity() > product.getStockQuantity()) {
-                throw new RuntimeException("Lỗi Tồn kho: Sản phẩm " + product.getName() + " không đủ số lượng.");
-            }
+            // QUAN TRỌNG: Gọi InventoryService để trừ kho theo lô (FIFO)
+            // Nếu không đủ hàng, service này sẽ throw Exception -> Rollback toàn bộ
+            inventoryService.deductStock(product.getProductId(), quantity);
 
-            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
-            productService.save(product);
+            // Tạo OrderItem
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(savedOrder);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(quantity);
+            orderItem.setPriceAtPurchase(cartItem.getPriceAtAddition());
 
-            OrderItem orderItem = createOrderItemEntity(newOrder, product, cartItem);
             orderItemRepository.save(orderItem);
-            newOrder.getOrderItems().add(orderItem);
+            orderItems.add(orderItem);
         }
 
-        Order savedOrder = orderRepository.save(newOrder);
+        savedOrder.setItems(orderItems);
 
-        // --- 4. Hoàn tất & Dọn dẹp ---
-        clearCart(cart);
+        // 6. Hoàn tất & Dọn dẹp
+        // Đánh dấu mã giảm giá đã được sử dụng (tăng count)
+        if (request.getCouponCode() != null) {
+            marketingService.markCouponAsUsed(request.getCouponCode());
+        }
 
-        // CHUYỂN ENTITY SANG DTO TRƯỚC KHI TRẢ VỀ
+        // Xóa giỏ hàng
+        cartService.clearCart(cart);
+
+        // 7. Trả về DTO
         return orderMapper.toOrderResponseDto(savedOrder);
     }
+
+    // Helper tính tổng gốc
+    private BigDecimal calculateOriginalTotal(Cart cart) {
+        return cart.getCartItems().stream()
+                .map(item -> item.getPriceAtAddition().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // ... (Giữ các hàm getMyOrders, findAllOrders, updateStatus cũ nhưng đổi kiểu trả về là DTO)
 
     // 2. Lấy đơn hàng cá nhân (GET /api/orders/my-orders) - Trả về Page<DTO>
     public Page<OrderResponseDTO> getMyOrders(Long userId, Pageable pageable) {
@@ -99,21 +135,9 @@ public class OrderService {
         return orders.map(orderMapper::toOrderResponseDto);
     }
 
-    // 3. Lấy chi tiết đơn hàng theo ID (Dùng cho cả Khách hàng và Admin) - Trả về DTO
-    public Optional<OrderResponseDTO> findOrderDtoById(Long orderId) {
-        return orderRepository.findById(orderId)
-                .map(orderMapper::toOrderResponseDto); // Chỉ chuyển sang DTO nếu tìm thấy
-    }
-
     // 4. Lấy tất cả đơn hàng (Admin) - Trả về Page<DTO>
     public Page<OrderResponseDTO> findAllOrders(Pageable pageable) {
         Page<Order> orders = orderRepository.findAll(pageable);
-        return orders.map(orderMapper::toOrderResponseDto);
-    }
-
-    // 5. Lấy đơn hàng theo trạng thái (Admin) - Trả về Page<DTO>
-    public Page<OrderResponseDTO> findOrdersByStatus(String status, Pageable pageable) {
-        Page<Order> orders = orderRepository.findByStatus(status, pageable);
         return orders.map(orderMapper::toOrderResponseDto);
     }
 
@@ -123,43 +147,15 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setStatus(newStatus);
+        try {
+            OrderStatus statusEnum = OrderStatus.valueOf(newStatus); // Chuyển String "SHIPPED" -> Enum SHIPPED
+            order.setOrderStatus(statusEnum); // Dùng đúng tên hàm setter
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Trạng thái đơn hàng không hợp lệ: " + newStatus);
+        }
         Order updatedOrder = orderRepository.save(order);
 
         // CHUYỂN ENTITY SANG DTO TRƯỚC KHI TRẢ VỀ
         return orderMapper.toOrderResponseDto(updatedOrder);
-    }
-
-    // --- CÁC HÀM HỖ TRỢ NỘI BỘ (Giữ nguyên) ---
-
-    // Hàm hỗ trợ: Tính tổng tiền
-    private BigDecimal calculateTotal(Cart cart) {
-        return cart.getCartItems().stream()
-                .map(item -> item.getPriceAtAddition().multiply(new BigDecimal(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    // Hàm hỗ trợ: Tạo Order Entity
-    private Order createNewOrderEntity(User user, BigDecimal totalAmount, CheckoutRequestDTO request, String paymentMethod) {
-        Order newOrder = new Order();
-        newOrder.setUser(user);
-        newOrder.setOrderDate(LocalDateTime.now());
-        newOrder.setShippingAddress(request.getShippingAddress());
-        newOrder.setShippingPhone(request.getShippingPhone());
-        newOrder.setPaymentMethod(paymentMethod);
-        newOrder.setStatus("PENDING");
-        newOrder.setTotalAmount(totalAmount);
-        newOrder.setOrderItems(new java.util.ArrayList<>());
-        return newOrder;
-    }
-
-    // Hàm hỗ trợ: Tạo OrderItem Entity
-    private OrderItem createOrderItemEntity(Order order, Product product, CartItem cartItem) {
-        OrderItem orderItem = new OrderItem();
-        orderItem.setOrder(order);
-        orderItem.setProduct(product);
-        orderItem.setQuantity(cartItem.getQuantity());
-        orderItem.setPriceAtPurchase(cartItem.getPriceAtAddition());
-        return orderItem;
     }
 }

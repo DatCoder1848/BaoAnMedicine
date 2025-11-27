@@ -13,6 +13,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public User getUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Not found userId: {}", userId));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
     }
 }

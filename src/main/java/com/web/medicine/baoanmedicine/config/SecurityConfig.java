@@ -4,7 +4,9 @@ import com.web.medicine.baoanmedicine.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,6 +40,8 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+
+
     // Cấu hình CORS cho phép Frontend truy cập
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -53,17 +57,36 @@ public class SecurityConfig {
     }
 
     @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**", "/api/products/**", "/api/categories/**").permitAll()
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .anyRequest().authenticated()
-                );
+                .csrf(AbstractHttpConfigurer::disable) // Tắt CSRF để API hoạt động
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Cho phép truy cập công khai các API Auth
+                        .requestMatchers("/api/auth/**").permitAll()
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        // 2. Cho phép xem danh sách thuốc, danh mục công khai
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
+
+                        // 3. API Chatbot công khai (hoặc yêu cầu auth tùy bạn, ở đây tôi để user đăng nhập mới chat được)
+                        // .requestMatchers("/api/chat/**").permitAll()
+
+                        // 4. Tất cả các request khác phải đăng nhập
+                        .anyRequest().authenticated()
+                )
+                // 5. Cấu hình không dùng Session (Stateless) vì dùng JWT
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .authenticationProvider(authenticationProvider())
+                // 6. Thêm Filter kiểm tra JWT trước Filter xác thực mặc định
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
