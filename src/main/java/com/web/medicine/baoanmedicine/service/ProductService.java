@@ -1,7 +1,9 @@
 package com.web.medicine.baoanmedicine.service;
 
 import com.web.medicine.baoanmedicine.dto.ProductDto;
+import com.web.medicine.baoanmedicine.model.Category;
 import com.web.medicine.baoanmedicine.model.Product;
+import com.web.medicine.baoanmedicine.repository.CategoryRepository;
 import com.web.medicine.baoanmedicine.repository.ProductRepository;
 import com.web.medicine.baoanmedicine.utils.mapper.ProductMapper; // Import Interface
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,8 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     // --- SỬA LỖI: Tiêm Mapper vào đây ---
     @Autowired
@@ -78,5 +82,29 @@ public class ProductService {
     public Product findByProductId(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
+
+    @Transactional
+    public ProductDto createProduct(ProductDto dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setImageUrl(dto.getImageUrl());
+        product.setManufacturer(dto.getManufacturer());
+        product.setUsageInstructions(dto.getUsageInstructions());
+        product.setPrescriptionRequired(dto.isPrescriptionRequired());
+        product.setTherapeuticClass(dto.getTherapeuticClass()); // Quan trọng cho AI
+
+        // Gán Category
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            product.setCategory(category);
+        }
+
+        // Lưu
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toDto(savedProduct);
     }
 }

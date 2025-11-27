@@ -19,5 +19,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> searchByNameOrFunction(@Param("keyword") String keyword, Pageable pageable);
 
     // Lọc theo danh mục
-    Page<Product> findByCategory_CategoryId(Integer categoryId, Pageable pageable);
+    Page<Product> findCategory_CategoryId(Integer categoryId, Pageable pageable);
 }

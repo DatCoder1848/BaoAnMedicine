@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,5 +38,11 @@ public class ProductController {
             @PathVariable Integer categoryId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.findByCategory(categoryId, pageable));
+    }
+
+    @PostMapping("/admin/products")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto dto) {
+        return ResponseEntity.ok(productService.createProduct(dto));
     }
 }
