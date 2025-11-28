@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, cartCount }) => {
   return (
     <header className="bg-[#001a4d] text-white shadow-lg sticky top-0 z-50">
       {/* Top Bar */}
-      <div className="bg-[#00132e] py-2">
+      {/* <div className="bg-[#00132e] py-1">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -32,14 +32,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, cartCount }) => {
             <span>Giao hàng nhanh 24/7</span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Header */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="Bảo An Medicine" className="h-12 w-12 object-contain" />
+            <img src={logo} alt="Bảo An Medicine" className="h-20 w-20 object-contain" />
             <div className="hidden md:block">
               <div className="text-xl tracking-wider">BẢO AN</div>
               <div className="text-xs tracking-widest opacity-90">MEDICINE</div>

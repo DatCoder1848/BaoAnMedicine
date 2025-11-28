@@ -9,15 +9,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    // Tìm kiếm cơ bản (Tên chứa từ khóa)
-    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
-
-    // Tìm kiếm nâng cao: Tìm trong Tên HOẶC Công dụng (Therapeutic Class)
+    // Nâng cấp: Tìm trong Tên OR Công dụng OR Thành phần
     @Query("SELECT p FROM Product p WHERE " +
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(p.therapeuticClass) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+            "LOWER(p.therapeuticClass) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(p.ingredients) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Product> searchByNameOrFunction(@Param("keyword") String keyword, Pageable pageable);
 
-    // Lọc theo danh mục
-    Page<Product> findCategory_CategoryId(Integer categoryId, Pageable pageable);
+    Page<Product> findByCategory_CategoryId(Integer categoryId, Pageable pageable);
 }

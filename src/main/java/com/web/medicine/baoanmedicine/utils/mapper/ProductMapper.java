@@ -13,7 +13,6 @@ public interface ProductMapper {
     // Lấy ID và Tên từ đối tượng Category lồng bên trong
     @Mapping(source = "category.categoryId", target = "categoryId")
     @Mapping(source = "category.name", target = "categoryName")
-
     // Quan trọng: Map từ hàm ảo getTotalStock() của Entity sang biến stockQuantity của DTO
     @Mapping(source = "totalStock", target = "stockQuantity")
 

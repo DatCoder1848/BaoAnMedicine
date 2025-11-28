@@ -18,6 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -41,8 +44,23 @@ public class SecurityConfig {
     }
 
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:5173");  // Vite
+        config.addAllowedOrigin("http://localhost:3000");  // React
+        config.setAllowCredentials(true);
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
 
-    // Cấu hình CORS cho phép Frontend truy cập
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+
+
+  /*  // Cấu hình CORS cho phép Frontend truy cập
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -54,7 +72,7 @@ public class SecurityConfig {
                         .allowedHeaders("*");
             }
         };
-    }
+    } */
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -67,13 +85,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // Tắt CSRF để API hoạt động
                 .authorizeHttpRequests(auth -> auth
                         // 1. Cho phép truy cập công khai các API Auth
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // 2. Cho phép xem danh sách thuốc, danh mục công khai
-                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/marketing/**").permitAll()
+
+                        .requestMatchers("/api/orders/**").authenticated()
 
                         // 3. API Chatbot công khai (hoặc yêu cầu auth tùy bạn, ở đây tôi để user đăng nhập mới chat được)
                         // .requestMatchers("/api/chat/**").permitAll()

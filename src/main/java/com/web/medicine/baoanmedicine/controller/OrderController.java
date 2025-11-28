@@ -49,4 +49,14 @@ public class OrderController {
             @RequestParam String status) {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
     }
+
+    // --- BỔ SUNG API LẤY CHI TIẾT ĐƠN HÀNG ---
+    @GetMapping("api/orders/{id}")
+    public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
+        // Gọi service lấy chi tiết đơn hàng
+        // Lưu ý: Trong OrderService (Java) cần có logic kiểm tra xem đơn hàng này
+        // có đúng là của User đang đăng nhập không nhé (để bảo mật).
+        OrderResponseDTO orderResponse = orderService.getOrderById(id);
+        return ResponseEntity.ok(orderResponse);
+    }
 }

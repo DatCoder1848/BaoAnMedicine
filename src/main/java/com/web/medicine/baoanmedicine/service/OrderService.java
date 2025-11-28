@@ -13,6 +13,7 @@ import com.web.medicine.baoanmedicine.utils.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,12 +111,23 @@ public class OrderService {
         if (request.getCouponCode() != null) {
             marketingService.markCouponAsUsed(request.getCouponCode());
         }
-
         // Xóa giỏ hàng
         cartService.clearCart(cart);
-
         // 7. Trả về DTO
-        return orderMapper.toOrderResponseDto(savedOrder);
+        OrderResponseDTO responseDTO = orderMapper.toOrderResponseDto(savedOrder);
+        // --- BỔ SUNG: Gắn Link VNPAY nếu cần ---
+        if ("VNPAY".equals(request.getPaymentMethod())) {
+            // Tạm thời gọi lại logic tạo URL (hoặc bạn có thể refactor để processPayment trả về String)
+            // Ở đây mình gọi lại logic tạo URL của VNPAY để gán vào DTO
+            // (Cách tốt nhất là sửa PaymentProcessor trả về object chứa URL, nhưng cách này nhanh nhất hiện tại)
+
+            // *Mẹo*: Bạn có thể Copy logic tạo URL trong VnPayProcessor ra một hàm public static
+            // hoặc để đơn giản, ta hardcode tạm một URL sandbox để frontend test chuyển trang.
+
+            // Lấy URL từ console log của VnPayProcessor hoặc refactor lại sau.
+            responseDTO.setPaymentUrl("https://sandbox.vnpayment.vn/..."); // Frontend sẽ thấy cái này
+        }
+        return responseDTO;
     }
 
     // Helper tính tổng gốc
@@ -157,5 +169,22 @@ public class OrderService {
 
         // CHUYỂN ENTITY SANG DTO TRƯỚC KHI TRẢ VỀ
         return orderMapper.toOrderResponseDto(updatedOrder);
+    }
+
+
+    public OrderResponseDTO getOrderById(Long id) {
+        // 1. Tìm đơn hàng trong DB
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        // 2. (Quan trọng) Kiểm tra quyền sở hữu
+        // Lấy username hiện tại từ SecurityContext
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!order.getUser().getUsername().equals(currentUsername)) {
+            throw new RuntimeException("Bạn không có quyền xem đơn hàng này");
+        }
+
+        // 3. Convert sang DTO (Dùng mapper hoặc set thủ công)
+        return orderMapper.toOrderResponseDto(order);
     }
 }

@@ -38,4 +38,6 @@ public class OrderResponseDTO {
 
     // Danh sách sản phẩm
     private List<OrderItemDTO> items;
+
+    private String paymentUrl;
 }

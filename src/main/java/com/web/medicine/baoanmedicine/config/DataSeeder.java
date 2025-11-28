@@ -9,8 +9,10 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -79,14 +81,29 @@ public class DataSeeder implements CommandLineRunner {
         catTieuHoa.setName("Tiêu Hóa");
         categoryRepository.save(catTieuHoa);
 
-        // 2. Tạo Sản phẩm 1: Panadol (Để test chat "đau đầu")
+        // 2. Tạo Sản phẩm 1: Panadol Extra
         Product p1 = new Product();
         p1.setName("Panadol Extra");
-        p1.setDescription("Giảm đau hạ sốt hiệu quả");
-        p1.setPrice(new BigDecimal("15000"));
-        p1.setTherapeuticClass("Giảm đau, Hạ sốt"); // Quan trọng cho tìm kiếm
+        p1.setDescription("Giảm đau hạ sốt hiệu quả, không gây buồn ngủ.");
+        p1.setPrice(new BigDecimal("15000")); // Giá bán
+        p1.setOriginalPrice(new BigDecimal("18000")); // Giá gốc (để hiển thị giảm giá)
+
+        p1.setUnit("Hộp 15 vỉ");
+        p1.setExpiryString("36 tháng kể từ NSX");
+        p1.setIngredients("Paracetamol 500mg, Caffeine 65mg");
+        p1.setSideEffects("Có thể gây dị ứng da, buồn nôn nếu dùng quá liều.");
+        p1.setStorageInstructions("Nơi khô ráo, tránh ánh nắng trực tiếp.");
+        p1.setTherapeuticClass("Giảm đau, Hạ sốt, Đau đầu");
+
         p1.setCategory(catGiamDau);
-        p1.setImageUrl("https://example.com/panadol.jpg");
+        p1.setImageUrl("https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/00000294_panadol_extra_glaxosmithkline_15x12_5352_603d_large_f596395b23.jpg");
+
+        // Thêm ảnh gallery
+        List<String> gallery1 = new ArrayList<>();
+        gallery1.add("https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/00000294_panadol_extra_glaxosmithkline_15x12_5352_603d_large_f596395b23.jpg");
+        gallery1.add("https://cdn.nhathuoclongchau.com.vn/unsafe/800x0/filters:quality(95)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_0349_2f57497d5d.jpg");
+        p1.setImages(gallery1);
+
         productRepository.save(p1);
 
         // 3. Nhập kho cho Panadol (Quan trọng: Nếu không nhập kho, Chatbot sẽ bảo hết hàng)
@@ -100,13 +117,19 @@ public class DataSeeder implements CommandLineRunner {
         inv1.setLocation("Kệ A1");
         inventoryRepository.save(inv1);
 
-        // 4. Tạo Sản phẩm 2: Berberin (Để test chat "đau bụng")
+        // Tạo Berberin với đầy đủ thông tin
         Product p2 = new Product();
-        p2.setName("Berberin");
-        p2.setDescription("Hỗ trợ điều trị rối loạn tiêu hóa");
+        p2.setName("Berberin Mộc Hương");
         p2.setPrice(new BigDecimal("25000"));
-        p2.setTherapeuticClass("Tiêu hóa, Cầm đi ngoài");
+        p2.setOriginalPrice(new BigDecimal("30000"));
+        p2.setUnit("Lọ 100 viên");
+        p1.setExpiryString("36 tháng kể từ NSX");
+        p2.setIngredients("Berberin clorid, Mộc hương");
+        p2.setSideEffects("Có thể gây dị ứng da, buồn nôn nếu dùng quá liều.");
+        p2.setStorageInstructions("Nơi khô ráo, tránh ánh nắng trực tiếp.");
+        p2.setTherapeuticClass("Tiêu hóa, Đau bụng");
         p2.setCategory(catTieuHoa);
+        p2.setImageUrl("https://example.com/berberin.jpg");
         productRepository.save(p2);
 
         // 5. Nhập kho cho Berberin

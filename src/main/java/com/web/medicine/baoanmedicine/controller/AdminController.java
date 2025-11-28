@@ -1,5 +1,6 @@
 package com.web.medicine.baoanmedicine.controller;
 
+import com.web.medicine.baoanmedicine.dto.AddressDto;
 import com.web.medicine.baoanmedicine.dto.UserDto;
 import com.web.medicine.baoanmedicine.dto.UserStatusUpdateDto;
 import com.web.medicine.baoanmedicine.model.User;
@@ -29,7 +30,18 @@ public class AdminController {
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
-        dto.setAddress(user.getAddress());
+        // Map Addresses (Từ Entity -> DTO)
+        if (user.getAddresses() != null) {
+            dto.setAddresses(user.getAddresses().stream().map(addr -> new AddressDto(
+                    addr.getId(),
+                    addr.getRecipientName(),
+                    addr.getPhoneNumber(),
+                    addr.getSpecificAddress(),
+                    addr.getCity(),
+                    addr.getIsDefault(),
+                    addr.getLabel()
+            )).collect(Collectors.toList()));
+        }
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setRoles(user.getRoles().stream()

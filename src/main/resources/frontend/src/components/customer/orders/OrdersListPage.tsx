@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2, PackageX } from 'lucide-react';
 import OrderListItem from '../../fragments/OrderListItem';
+import { OrderService } from '../../../services/orderService';
+import { Order } from '../../../types/order';
 
 interface OrdersListPageProps {
   user: any;
@@ -9,122 +11,128 @@ interface OrdersListPageProps {
 
 const OrdersListPage: React.FC<OrdersListPageProps> = ({ user }) => {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('ALL');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock orders data
-  const orders = [
-    {
-      id: 'ORD123456',
-      date: '20/11/2025',
-      status: 'shipping',
-      total: 245000,
-      items: [
-        { name: 'Paracetamol 500mg', quantity: 2, price: 15000 },
-        { name: 'Vitamin C 1000mg', quantity: 1, price: 120000 },
-        { name: 'Omega-3 Fish Oil', quantity: 1, price: 95000 },
-      ],
-    },
-    {
-      id: 'ORD123455',
-      date: '18/11/2025',
-      status: 'completed',
-      total: 180000,
-      items: [
-        { name: 'Amoxicillin 500mg', quantity: 2, price: 45000 },
-        { name: 'Cetirizine 10mg', quantity: 3, price: 30000 },
-      ],
-    },
-    {
-      id: 'ORD123454',
-      date: '15/11/2025',
-      status: 'pending',
-      total: 350000,
-      items: [
-        { name: 'Collagen Beauty Plus', quantity: 1, price: 350000 },
-      ],
-    },
-    {
-      id: 'ORD123453',
-      date: '10/11/2025',
-      status: 'cancelled',
-      total: 120000,
-      items: [
-        { name: 'Vitamin C 1000mg', quantity: 1, price: 120000 },
-      ],
-    },
-  ];
+  // Gọi API lấy danh sách
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const data = await OrderService.getMyOrders(0, 50); // Lấy 50 đơn gần nhất
+        // data trả về có thể là array hoặc object Page.
+        // Nếu service trả về content array thì dùng luôn, nếu không check lại service
+        setOrders(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Lỗi tải lịch sử đơn hàng:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const filters = [
-    { id: 'all', label: 'Tất cả' },
-    { id: 'pending', label: 'Chờ xác nhận' },
-    { id: 'processing', label: 'Đang xử lý' },
-    { id: 'shipping', label: 'Đang giao' },
-    { id: 'completed', label: 'Hoàn thành' },
-    { id: 'cancelled', label: 'Đã hủy' },
+    { id: 'ALL', label: 'Tất cả' },
+    { id: 'NEW', label: 'Chờ xác nhận' }, // Map với Enum Backend
+    { id: 'SHIPPING', label: 'Đang giao' },
+    { id: 'COMPLETED', label: 'Hoàn thành' },
+    { id: 'CANCELLED', label: 'Đã hủy' },
   ];
 
-  const filteredOrders =
-    filter === 'all' ? orders : orders.filter((order) => order.status === filter);
+  // Logic lọc Client-side (Hoặc gọi API có tham số status nếu backend hỗ trợ)
+  const filteredOrders = filter === 'ALL'
+      ? orders
+      : orders.filter((order) => order.orderStatus === filter);
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => navigate('/profile')}
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-gray-900">Đơn hàng của tôi</h1>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow mb-6 p-4 overflow-x-auto">
-          <div className="flex gap-3 min-w-max">
-            {filters.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className={`px-6 py-2 rounded-lg transition-colors whitespace-nowrap ${
-                  filter === f.id
-                    ? 'bg-cyan-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Orders List */}
-        {filteredOrders.length > 0 ? (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => (
-              <OrderListItem key={order.id} order={order} />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl shadow p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-24 h-24 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-            </div>
-            <h3 className="text-gray-900 mb-2">Không có đơn hàng</h3>
-            <p className="text-gray-600 mb-6">Bạn chưa có đơn hàng nào trong danh mục này</p>
+      <div className="bg-gray-50 min-h-screen py-8">
+        <div className="container mx-auto px-4 max-w-5xl">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
             <button
-              onClick={() => navigate('/products')}
-              className="bg-cyan-500 text-white px-8 py-3 rounded-lg hover:bg-cyan-600 transition-colors"
+                onClick={() => navigate('/profile')}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
             >
-              Mua sắm ngay
+              <ArrowLeft className="w-6 h-6" />
             </button>
+            <h1 className="text-gray-900 text-2xl font-bold">Lịch sử đơn hàng</h1>
           </div>
-        )}
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow mb-6 p-4 overflow-x-auto no-scrollbar">
+            <div className="flex gap-3 min-w-max">
+              {filters.map((f) => (
+                  <button
+                      key={f.id}
+                      onClick={() => setFilter(f.id)}
+                      className={`px-6 py-2 rounded-lg transition-colors whitespace-nowrap font-medium text-sm ${
+                          filter === f.id
+                              ? 'bg-cyan-600 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                  >
+                    {f.label}
+                  </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {loading && (
+              <div className="flex justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-600" />
+              </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && filteredOrders.length === 0 && (
+              <div className="bg-white rounded-xl shadow p-12 text-center">
+                <div className="text-gray-300 mb-4 flex justify-center">
+                  <PackageX className="w-24 h-24" />
+                </div>
+                <h3 className="text-gray-900 mb-2 font-bold">Không có đơn hàng nào</h3>
+                <p className="text-gray-500 mb-6">Bạn chưa có đơn hàng nào trong danh mục này</p>
+                <button
+                    onClick={() => navigate('/products')}
+                    className="bg-cyan-600 text-white px-8 py-3 rounded-lg hover:bg-cyan-700 transition-colors font-bold shadow-lg shadow-cyan-200"
+                >
+                  Mua sắm ngay
+                </button>
+              </div>
+          )}
+
+          {/* Orders List */}
+          {!loading && filteredOrders.length > 0 && (
+              <div className="space-y-4">
+                {filteredOrders.map((order) => {
+
+                  // --- QUAN TRỌNG: MAPPING DỮ LIỆU ---
+                  // Chuyển đổi dữ liệu API (Order) sang cấu trúc mà OrderListItem cũ mong đợi
+                  // Giả sử OrderListItem mong đợi: { id, date, status, total, items: [{name, quantity, price}] }
+                  const mappedOrderForUI = {
+                    id: order.orderId, // UI cũ dùng id string/number
+                    date: new Date(order.orderDate).toLocaleDateString('vi-VN'), // Format ngày
+                    status: order.orderStatus,
+                    total: order.totalAmount,
+                    // Map items để OrderListItem hiển thị tên thuốc
+                    items: order.items.map(i => ({
+                      name: i.product.name,
+                      quantity: i.quantity,
+                      price: i.priceAtPurchase
+                    }))
+                  };
+
+                  return (
+                      // Truyền prop order đã được map
+                      <OrderListItem key={order.orderId} order={mappedOrderForUI} />
+                  );
+                })}
+              </div>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 

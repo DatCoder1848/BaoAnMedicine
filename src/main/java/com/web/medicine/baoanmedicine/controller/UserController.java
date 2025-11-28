@@ -1,5 +1,6 @@
 package com.web.medicine.baoanmedicine.controller;
 
+import com.web.medicine.baoanmedicine.dto.AddressDto;
 import com.web.medicine.baoanmedicine.dto.UserDto;
 import com.web.medicine.baoanmedicine.dto.UserUpdateDto;
 import com.web.medicine.baoanmedicine.model.User;
@@ -21,18 +22,35 @@ public class UserController {
     private final UserRepository userRepository;
 
     // Hàm ánh xạ Entity sang DTO
+    // --- CẬP NHẬT HÀM MAP NÀY ---
     private UserDto mapToUserDto(User user) {
         UserDto dto = new UserDto();
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
-        dto.setAddress(user.getAddress());
         dto.setPhoneNumber(user.getPhoneNumber());
+        // Đã xóa: dto.setAddress(...)
+
         dto.setCreatedAt(user.getCreatedAt());
-        // Lấy tên Role
+
+        // Map Roles
         dto.setRoles(user.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toSet()));
+
+        // Map Addresses (Từ Entity -> DTO)
+        if (user.getAddresses() != null) {
+            dto.setAddresses(user.getAddresses().stream().map(addr -> new AddressDto(
+                    addr.getId(),
+                    addr.getRecipientName(),
+                    addr.getPhoneNumber(),
+                    addr.getSpecificAddress(),
+                    addr.getCity(),
+                    addr.getIsDefault(),
+                    addr.getLabel()
+            )).collect(Collectors.toList()));
+        }
+
         return dto;
     }
 
@@ -52,18 +70,17 @@ public class UserController {
     }
 
     // API: PUT /api/users/me (Cập nhật hồ sơ)
+    // --- CẬP NHẬT HÀM UPDATE ---
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> updateCurrentUser(@RequestBody UserUpdateDto updateDto) {
         User user = getCurrentUser();
 
-        // Cập nhật thông tin từ DTO
         if (updateDto.getFullName() != null) user.setFullName(updateDto.getFullName());
-        if (updateDto.getAddress() != null) user.setAddress(updateDto.getAddress());
         if (updateDto.getPhoneNumber() != null) user.setPhoneNumber(updateDto.getPhoneNumber());
+        // Đã xóa dòng update address cũ
 
         User updatedUser = userRepository.save(user);
-
         return ResponseEntity.ok(mapToUserDto(updatedUser));
     }
 }

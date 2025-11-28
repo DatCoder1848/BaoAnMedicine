@@ -3,6 +3,7 @@ package com.web.medicine.baoanmedicine.dto;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -12,20 +13,26 @@ public class ProductDto {
     private String name;
     private String description;
 
-    // THÊM TRƯỜNG NÀY (Để Frontend hiển thị công dụng thuốc)
-    private String therapeuticClass;
+    private BigDecimal price;         // Giá bán
+    private BigDecimal originalPrice; // Giá gốc (MỚI)
 
-    private BigDecimal price;
+    private String unit;              // Đơn vị tính (MỚI)
+    private String expiryString;      // Hạn sử dụng text (MỚI)
+    private String ingredients;       // Thành phần (MỚI)
+    private String sideEffects;       // Tác dụng phụ (MỚI)
+    private String storageInstructions; // Bảo quản (MỚI)
 
-    // Lưu ý: Giá trị này sẽ được Mapper lấy từ product.getTotalStock()
-    private Integer stockQuantity;
+    private String imageUrl;          // Ảnh chính
+    private List<String> images;      // Danh sách ảnh gallery (MỚI)
 
-    private String imageUrl;
     private String manufacturer;
     private String usageInstructions;
     private boolean prescriptionRequired;
-    private LocalDateTime createdAt;
+    private String therapeuticClass;
 
+    private Integer stockQuantity; // Tồn kho (tính toán)
+
+    private LocalDateTime createdAt;
     private Integer categoryId;
     private String categoryName;
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class User {
     @Column(nullable = false)
     private String email;
     private String fullName;
-    private String address;
+
     private String phoneNumber;
 
     @CreationTimestamp
@@ -50,4 +51,8 @@ public class User {
     // Thêm quan hệ với Cart nếu chưa có
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Cart cart;
+
+    // --- THÊM MỚI: Quan hệ với Address ---
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 }
