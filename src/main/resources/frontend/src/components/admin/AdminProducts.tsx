@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search,
   Plus,
@@ -8,543 +8,588 @@ import {
   X,
   ChevronRight,
   ChevronLeft,
+  FileSpreadsheet,
+  UploadCloud,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
+// Import Service và Type chuẩn từ dự án của bạn
+import { AdminService } from "../../services/adminService";
+import { Product } from "../../types/product";
+
 const AdminProducts: React.FC = () => {
+  // --- STATE QUẢN LÝ DỮ LIỆU ---
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
+
+  // --- STATE MODAL & FORM ---
+  const [showModal, setShowModal] = useState(false);
   const [formStep, setFormStep] = useState(1);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create'); // Chế độ của Modal
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
-  // Form state for basic info
-  const [basicInfo, setBasicInfo] = useState({
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Form Data State
+  const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
-    category: "otc",
-    price: "",
-    originalPrice: "",
-    stock: "",
-    brand: "",
+    categoryId: 1,
+    price: 0,
+    originalPrice: 0,
+    stockQuantity: 0,
     unit: "",
-    image: "",
-  });
-
-  // Form state for detailed info
-  const [detailedInfo, setDetailedInfo] = useState({
+    imageUrl: "",
+    description: "",
     ingredients: "",
-    uses: "",
-    dosage: "",
-    sideEffects: "",
-    storage: "",
-    expiry: "",
+    usageInstructions: "",
+    storageInstructions: "",
+    manufacturer: "",
+    // expiryString... (Nếu backend có field này thì thêm vào type Product, tạm thời để string)
   });
 
-  const handleBasicInfoChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setBasicInfo((prev) => ({ ...prev, [name]: value }));
+  // --- 1. LOAD DANH SÁCH SẢN PHẨM ---
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      // Gọi qua AdminService
+      const data = await AdminService.getProducts(0, 100, searchQuery);
+      // Kiểm tra cấu trúc trả về (Page hoặc List)
+      if (data.content) {
+        setProducts(data.content);
+      } else if (Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error("Lỗi tải danh sách:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDetailedInfoChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setDetailedInfo((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    // Debounce search hoặc load lần đầu
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // --- 2. XỬ LÝ IMPORT EXCEL ---
+  const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!window.confirm(`Bạn có chắc muốn import file: ${file.name}?`)) return;
+
+    setIsImporting(true);
+    try {
+      // Gọi qua AdminService
+      await AdminService.importProductsExcel(file);
+      alert("✅ Import dữ liệu thành công!");
+      fetchProducts(); // Refresh lại bảng
+    } catch (error: any) {
+      alert("❌ Lỗi Import: " + (error.response?.data || error.message));
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
-  const handleSubmit = () => {
-    console.log("Product Data:", { basicInfo, detailedInfo });
-    // Reset form
-    setBasicInfo({
-      name: "",
-      category: "otc",
-      price: "",
-      originalPrice: "",
-      stock: "",
-      brand: "",
-      unit: "",
-      image: "",
+  // --- 3. XỬ LÝ XÓA ---
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.")) return;
+
+    try {
+      await AdminService.deleteProduct(id);
+      alert("✅ Đã xóa sản phẩm!");
+      setProducts(prev => prev.filter(p => p.productId !== id));
+    } catch (error) {
+      alert("❌ Không thể xóa (Sản phẩm có thể đang nằm trong đơn hàng).");
+    }
+  };
+
+  // --- 4. MỞ MODAL (THÊM / SỬA / XEM) ---
+
+  // Mở form Thêm mới
+  const openCreateModal = () => {
+    setModalMode('create');
+    resetForm();
+    setShowModal(true);
+  };
+
+  // Mở form Sửa
+  const openEditModal = (product: Product) => {
+    setModalMode('edit');
+    fillForm(product);
+    setShowModal(true);
+  };
+
+  // Mở form Xem chi tiết
+  const openViewModal = (product: Product) => {
+    setModalMode('view'); // Chế độ chỉ đọc
+    fillForm(product);
+    setShowModal(true);
+  };
+
+  const fillForm = (product: Product) => {
+    setFormData({
+      ...product,
+      categoryId: product.categoryId || 1 // Fallback nếu null
     });
-    setDetailedInfo({
-      ingredients: "",
-      uses: "",
-      dosage: "",
-      sideEffects: "",
-      storage: "",
-      expiry: "",
-    });
+  };
+
+  const resetForm = () => {
     setFormStep(1);
-    setShowAddModal(false);
-  };
-
-  const closeModal = () => {
-    setShowAddModal(false);
-    setFormStep(1);
-    setBasicInfo({
+    setFormData({
       name: "",
-      category: "otc",
-      price: "",
-      originalPrice: "",
-      stock: "",
-      brand: "",
+      categoryId: 1,
+      price: 0,
+      originalPrice: 0,
+      stockQuantity: 0,
       unit: "",
-      image: "",
-    });
-    setDetailedInfo({
+      imageUrl: "",
+      description: "",
       ingredients: "",
-      uses: "",
-      dosage: "",
-      sideEffects: "",
-      storage: "",
-      expiry: "",
+      usageInstructions: "",
+      storageInstructions: "",
+      manufacturer: ""
     });
   };
 
-  const products = [
-    {
-      id: 1,
-      name: "Paracetamol 500mg",
-      category: "Thuốc không kê đơn",
-      price: 15000,
-      stock: 150,
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "Vitamin C 1000mg",
-      category: "Thực phẩm chức năng",
-      price: 120000,
-      stock: 85,
-      status: "active",
-    },
-    {
-      id: 3,
-      name: "Amoxicillin 500mg",
-      category: "Thuốc kê đơn",
-      price: 45000,
-      stock: 60,
-      status: "active",
-    },
-    {
-      id: 4,
-      name: "Omega-3 Fish Oil",
-      category: "Thực phẩm chức năng",
-      price: 250000,
-      stock: 45,
-      status: "active",
-    },
-    {
-      id: 5,
-      name: "Ibuprofen 400mg",
-      category: "Thuốc không kê đơn",
-      price: 25000,
-      stock: 120,
-      status: "active",
-    },
-    {
-      id: 6,
-      name: "Multivitamin Premium",
-      category: "Thực phẩm chức năng",
-      price: 350000,
-      stock: 30,
-      status: "low",
-    },
-    {
-      id: 7,
-      name: "Cetirizine 10mg",
-      category: "Thuốc không kê đơn",
-      price: 30000,
-      stock: 95,
-      status: "active",
-    },
-    {
-      id: 8,
-      name: "Collagen Beauty Plus",
-      category: "Thực phẩm chức năng",
-      price: 450000,
-      stock: 5,
-      status: "low",
-    },
-  ];
+  // --- 5. SUBMIT FORM (LƯU) ---
+  const handleSubmit = async () => {
+    if (modalMode === 'view') {
+      setShowModal(false);
+      return;
+    }
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    // Validate đơn giản
+    if (!formData.name || !formData.price) {
+      alert("Vui lòng nhập Tên sản phẩm và Giá bán!");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (modalMode === 'create') {
+        await AdminService.createProduct(formData);
+        alert("✅ Thêm mới thành công!");
+      } else if (modalMode === 'edit' && formData.productId) {
+        await AdminService.updateProduct(formData.productId, formData);
+        alert("✅ Cập nhật thành công!");
+      }
+
+      setShowModal(false);
+      fetchProducts();
+    } catch (error) {
+      console.error(error);
+      alert("❌ Có lỗi xảy ra khi lưu dữ liệu.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- XỬ LÝ INPUT ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'price' || name === 'originalPrice' || name === 'stockQuantity' || name === 'categoryId'
+          ? Number(value)
+          : value
+    }));
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-gray-900">Quản lý sản phẩm</h1>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Thêm sản phẩm
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-50 p-6 font-sans">
+        <div className="max-w-7xl mx-auto">
 
-        {/* Search */}
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
-          <div className="relative max-w-md">
-            <input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          {/* --- HEADER & ACTIONS --- */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Quản lý kho thuốc</h1>
+              <p className="text-gray-500 text-sm mt-1">Quản lý sản phẩm, tồn kho và danh mục</p>
+            </div>
+
+            <div className="flex gap-3">
+              {/* Nút Import Excel - ÉP MÀU XANH LÁ BẰNG STYLE CỨNG */}
+              <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImportExcel}
+                  accept=".xlsx, .xls"
+                  className="hidden"
+              />
+              <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                  // Style cứng để ép màu hiện ra
+                  style={{ backgroundColor: '#16a34a', color: '#ffffff' }}
+                  className="px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-md font-bold disabled:opacity-70 hover:opacity-90 transition-all"
+              >
+                {isImporting ? <Loader2 className="w-5 h-5 animate-spin"/> : <FileSpreadsheet className="w-5 h-5" />}
+                Import Excel
+              </button>
+
+              {/* Nút Thêm Mới - ÉP MÀU XANH DƯƠNG BẰNG STYLE CỨNG */}
+              <button
+                  onClick={openCreateModal}
+                  // Style cứng để ép màu hiện ra
+                  style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+                  className="px-5 py-2.5 rounded-lg flex items-center gap-2 shadow-md font-bold hover:opacity-90 transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                Thêm thuốc mới
+              </button>
+            </div>
+          </div>
+
+          {/* --- SEARCH BAR --- */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="relative max-w-lg">
+              <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên thuốc, hoạt chất..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+
+          {/* --- TABLE --- */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {isLoading ? (
+                <div className="p-12 text-center text-gray-500 flex flex-col items-center">
+                  <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
+                  <p>Đang tải dữ liệu từ hệ thống...</p>
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Danh mục</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Giá bán</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Tồn kho</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                    {products.length > 0 ? (
+                        products.map((product) => (
+                            <tr key={product.productId} className="hover:bg-blue-50/50 transition-colors">
+                              {/* Cột Sản phẩm */}
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden border border-gray-200 flex items-center justify-center">
+                                    {product.imageUrl ? (
+                                        <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <UploadCloud className="text-gray-400 w-6 h-6"/>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold text-gray-800">{product.name}</div>
+                                    <div className="text-xs text-gray-500">{product.unit || 'Đơn vị: --'}</div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Cột Danh mục */}
+                              <td className="px-6 py-4 text-sm text-gray-600">
+                        <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            {product.categoryName || 'Chưa phân loại'}
+                        </span>
+                              </td>
+
+                              {/* Cột Giá */}
+                              <td className="px-6 py-4 text-sm font-bold text-blue-600 text-right">
+                                {product.price?.toLocaleString("vi-VN")}đ
+                              </td>
+
+                              {/* Cột Tồn kho */}
+                              <td className="px-6 py-4 text-center">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          (product.stockQuantity || 0) < 10
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-100 text-green-700"
+                      }`}>
+                        {product.stockQuantity || 0}
+                      </span>
+                              </td>
+
+                              {/* Cột Hành động */}
+                              <td className="px-6 py-4">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                      onClick={() => openViewModal(product)}
+                                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                      title="Xem chi tiết"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                      onClick={() => openEditModal(product)}
+                                      className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                                      title="Chỉnh sửa"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                      onClick={() => handleDelete(product.productId)}
+                                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                      title="Xóa"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                        ))) : (
+                        <tr>
+                          <td colSpan={5} className="text-center py-16">
+                            <div className="flex flex-col items-center justify-center text-gray-400">
+                              <AlertCircle className="w-12 h-12 mb-3 opacity-20"/>
+                              <p className="text-lg font-medium text-gray-500">Chưa có dữ liệu thuốc</p>
+                              <p className="text-sm">Hãy thử Import Excel hoặc thêm thủ công.</p>
+                            </div>
+                          </td>
+                        </tr>
+                    )}
+                    </tbody>
+                  </table>
+                </div>
+            )}
           </div>
         </div>
 
-        {/* Products Table */}
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    Tên sản phẩm
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    Danh mục
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    Giá
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    Tồn kho
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    Trạng thái
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500">
-                    Hành động
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm">#{product.id}</td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">{product.name}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {product.category}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {product.price.toLocaleString("vi-VN")}đ
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className={product.stock < 10 ? "text-red-600" : ""}
-                      >
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs ${
-                          product.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {product.status === "active" ? "Hoạt động" : "Sắp hết"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <button className="text-blue-600 hover:text-blue-700">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-700">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-700">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+        {/* --- MODAL CHUNG (Thêm / Sửa / Xem) --- */}
+        {showModal && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col animate-fade-in-up">
+
+                {/* Modal Header */}
+                <div className={`px-6 py-4 border-b flex items-center justify-between sticky top-0 z-10 ${
+                    modalMode === 'view' ? 'bg-gray-100' : 'bg-white'
+                }`}>
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    {modalMode === 'create' && <><Plus className="w-5 h-5 text-blue-600"/> Thêm thuốc mới</>}
+                    {modalMode === 'edit' && <><Edit2 className="w-5 h-5 text-amber-600"/> Cập nhật thông tin</>}
+                    {modalMode === 'view' && <><Eye className="w-5 h-5 text-gray-600"/> Chi tiết sản phẩm</>}
+                  </h2>
+                  <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-red-500 transition-colors">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="p-6 space-y-5">
+                  {/* Thông báo chế độ xem */}
+                  {modalMode === 'view' && (
+                      <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4"/>
+                        Bạn đang xem ở chế độ chỉ đọc. Không thể chỉnh sửa.
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                  )}
 
-      {/* Add Product Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
-              <h2 className="text-2xl text-gray-900">
-                {formStep === 1
-                  ? "Thêm sản phẩm - Bước 1: Thông tin cơ bản"
-                  : "Thêm sản phẩm - Bước 2: Thông tin chi tiết"}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+                  {/* Step Tabs */}
+                  <div className="flex border-b border-gray-200 mb-4">
+                    <button
+                        onClick={() => setFormStep(1)}
+                        className={`pb-2 px-4 text-sm font-medium transition-colors ${formStep === 1 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+                    >
+                      1. Thông tin cơ bản
+                    </button>
+                    <button
+                        onClick={() => setFormStep(2)}
+                        className={`pb-2 px-4 text-sm font-medium transition-colors ${formStep === 2 ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+                    >
+                      2. Chi tiết y tế
+                    </button>
+                  </div>
 
-            {/* Modal Content */}
-            <div className="p-6">
-              {formStep === 1 ? (
-                // Form 1: Basic Information
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tên sản phẩm *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={basicInfo.name}
-                        onChange={handleBasicInfoChange}
-                        placeholder="VD: Paracetamol 500mg"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Danh mục *
-                      </label>
-                      <select
-                        name="category"
-                        value={basicInfo.category}
-                        onChange={handleBasicInfoChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  {formStep === 1 ? (
+                      /* --- FORM STEP 1 --- */
+                      <div className="space-y-4 animate-fade-in">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tên thuốc <span className="text-red-500">*</span></label>
+                            <input
+                                type="text" name="name"
+                                value={formData.name} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                                placeholder="VD: Panadol Extra"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                            <select
+                                name="categoryId"
+                                value={formData.categoryId} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                            >
+                              <option value="1">Giảm đau & Hạ sốt</option>
+                              <option value="2">Tiêu hóa</option>
+                              <option value="3">Hô hấp</option>
+                              <option value="4">Vitamin & Khoáng chất</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Giá bán (VNĐ) <span className="text-red-500">*</span></label>
+                            <input
+                                type="number" name="price"
+                                value={formData.price} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Giá gốc (VNĐ)</label>
+                            <input
+                                type="number" name="originalPrice"
+                                value={formData.originalPrice} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tồn kho</label>
+                            <input
+                                type="number" name="stockQuantity"
+                                value={formData.stockQuantity} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính</label>
+                            <input
+                                type="text" name="unit"
+                                value={formData.unit} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                placeholder="Hộp, Vỉ, Chai..."
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Link Ảnh (URL)</label>
+                          <div className="flex gap-2">
+                            <input
+                                type="text" name="imageUrl"
+                                value={formData.imageUrl} onChange={handleInputChange}
+                                disabled={modalMode === 'view'}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                                placeholder="/images/products/..."
+                            />
+                            {formData.imageUrl && (
+                                <div className="w-10 h-10 border rounded overflow-hidden flex-shrink-0">
+                                  <img src={formData.imageUrl} alt="Review" className="w-full h-full object-cover"/>
+                                </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                  ) : (
+                      /* --- FORM STEP 2 --- */
+                      <div className="space-y-4 animate-fade-in">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Thành phần</label>
+                          <textarea
+                              name="ingredients" rows={2}
+                              value={formData.ingredients} onChange={handleInputChange}
+                              disabled={modalMode === 'view'}
+                              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Công dụng (Mô tả)</label>
+                          <textarea
+                              name="description" rows={3}
+                              value={formData.description} onChange={handleInputChange}
+                              disabled={modalMode === 'view'}
+                              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Hướng dẫn sử dụng</label>
+                          <textarea
+                              name="usageInstructions" rows={2}
+                              value={formData.usageInstructions} onChange={handleInputChange}
+                              disabled={modalMode === 'view'}
+                              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Bảo quản</label>
+                          <textarea
+                              name="storageInstructions" rows={2}
+                              value={formData.storageInstructions} onChange={handleInputChange}
+                              disabled={modalMode === 'view'}
+                              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                          />
+                        </div>
+                      </div>
+                  )}
+                </div>
+
+                {/* Modal Footer */}
+                {/* Modal Footer - Đã chỉnh lại màu nút */}
+                <div className="p-6 border-t bg-gray-50 flex justify-between sticky bottom-0 rounded-b-2xl z-20">
+                  <button
+                      onClick={() => {
+                        if (formStep === 2) setFormStep(1);
+                        else setShowModal(false);
+                      }}
+                      // Nút Hủy: Màu trắng, viền xám
+                      style={{ backgroundColor: '#ffffff', color: '#374151', border: '1px solid #d1d5db' }}
+                      className="px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm hover:bg-gray-100"
+                  >
+                    {formStep === 1 ? (modalMode === 'view' ? "Đóng" : "Hủy bỏ") : "Quay lại"}
+                  </button>
+
+                  {modalMode !== 'view' && (
+                      <button
+                          onClick={() => {
+                            if (formStep === 1) setFormStep(2);
+                            else handleSubmit();
+                          }}
+                          disabled={isSubmitting}
+                          // Nút Hành động: ÉP MÀU XANH DƯƠNG
+                          style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+                          className="px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-md disabled:opacity-70 transition-all hover:opacity-90"
                       >
-                        <option value="otc">Thuốc không kê đơn</option>
-                        <option value="prescription">Thuốc kê đơn</option>
-                        <option value="supplement">Thực phẩm chức năng</option>
-                        <option value="healthcare">Chăm sóc sức khỏe</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Giá hiện tại (đ) *
-                      </label>
-                      <input
-                        type="number"
-                        name="price"
-                        value={basicInfo.price}
-                        onChange={handleBasicInfoChange}
-                        placeholder="15000"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Giá gốc (đ)
-                      </label>
-                      <input
-                        type="number"
-                        name="originalPrice"
-                        value={basicInfo.originalPrice}
-                        onChange={handleBasicInfoChange}
-                        placeholder="20000"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tồn kho *
-                      </label>
-                      <input
-                        type="number"
-                        name="stock"
-                        value={basicInfo.stock}
-                        onChange={handleBasicInfoChange}
-                        placeholder="100"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Thương hiệu *
-                      </label>
-                      <input
-                        type="text"
-                        name="brand"
-                        value={basicInfo.brand}
-                        onChange={handleBasicInfoChange}
-                        placeholder="VD: DHG Pharma"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Đơn vị *
-                    </label>
-                    <input
-                      type="text"
-                      name="unit"
-                      value={basicInfo.unit}
-                      onChange={handleBasicInfoChange}
-                      placeholder="VD: Hộp 100 viên"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      URL ảnh sản phẩm
-                    </label>
-                    <input
-                      type="url"
-                      name="image"
-                      value={basicInfo.image}
-                      onChange={handleBasicInfoChange}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
+                        {isSubmitting ? <Loader2 className="animate-spin w-5 h-5"/> : (
+                            formStep === 1 ? (
+                                <>Tiếp tục <ChevronRight size={18}/></>
+                            ) : (
+                                modalMode === 'edit' ? "Cập nhật" : "Hoàn tất"
+                            )
+                        )}
+                      </button>
+                  )}
                 </div>
-              ) : (
-                // Form 2: Detailed Information
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Thành phần *
-                    </label>
-                    <textarea
-                      name="ingredients"
-                      value={detailedInfo.ingredients}
-                      onChange={handleDetailedInfoChange}
-                      placeholder="VD: Paracetamol 500mg"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Công dụng *
-                    </label>
-                    <textarea
-                      name="uses"
-                      value={detailedInfo.uses}
-                      onChange={handleDetailedInfoChange}
-                      placeholder="Mô tả công dụng chi tiết sản phẩm"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Liều dùng *
-                    </label>
-                    <textarea
-                      name="dosage"
-                      value={detailedInfo.dosage}
-                      onChange={handleDetailedInfoChange}
-                      placeholder="Hướng dẫn sử dụng chi tiết"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tác dụng phụ
-                    </label>
-                    <textarea
-                      name="sideEffects"
-                      value={detailedInfo.sideEffects}
-                      onChange={handleDetailedInfoChange}
-                      placeholder="Liệt kê các tác dụng phụ có thể xảy ra"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cách bảo quản *
-                    </label>
-                    <textarea
-                      name="storage"
-                      value={detailedInfo.storage}
-                      onChange={handleDetailedInfoChange}
-                      placeholder="Hướng dẫn bảo quản sản phẩm"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Hạn sử dụng *
-                    </label>
-                    <textarea
-                      name="expiry"
-                      value={detailedInfo.expiry}
-                      onChange={handleDetailedInfoChange}
-                      placeholder="VD: 36 tháng kể từ ngày sản xuất"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center justify-between p-6 border-t bg-gray-50 sticky bottom-0">
-              <button
-                onClick={() => {
-                  if (formStep === 2) setFormStep(1);
-                  else closeModal();
-                }}
-                className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                {formStep === 1 ? "Hủy" : "Quay lại"}
-              </button>
-              <button
-                onClick={() => {
-                  if (formStep === 1) setFormStep(2);
-                  else handleSubmit();
-                }}
-                className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg hover:from-cyan-600 hover:to-blue-700 flex items-center gap-2"
-              >
-                {formStep === 1 ? (
-                  <>
-                    Tiếp tục
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                ) : (
-                  "Thêm sản phẩm"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
   );
 };
 
