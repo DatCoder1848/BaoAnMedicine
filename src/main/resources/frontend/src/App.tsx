@@ -22,6 +22,7 @@ import AdminOrders from './components/admin/AdminOrders';
 import AdminUsers from './components/admin/AdminUsers';
 import AdminSidebar from './components/fragments/AdminSidebar';
 import Chatbox from './components/Chatbox';
+import ChatWidget from './components/ui/ChatWidget';
 // Import Service Giỏ hàng và Auth
 import { CartService } from './services/cartService';
 import { AuthService } from './services/authService';
@@ -143,6 +144,7 @@ function App() {
               } />
           )}
         </Routes>
+        <ChatWidget />
       </Router>
   );
 }
